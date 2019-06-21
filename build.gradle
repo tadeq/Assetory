@@ -1,0 +1,53 @@
+plugins {
+
+    id 'java'
+    id 'com.gradle.build-scan' version '2.0.2'
+    id 'org.springframework.boot' version '2.1.5.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    // Apply the application plugin to add support for building an application
+    id 'application'
+}
+
+mainClassName = 'pl.edu.egh.assetory.App'
+
+repositories {
+    // Use jcenter for resolving your dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.1.5.RELEASE'
+    implementation 'com.google.guava:guava:27.0.1-jre'
+    implementation 'io.springfox:springfox-swagger2:2.9.2'
+    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
+    implementation 'io.swagger:swagger-models:1.5.22'
+    implementation 'org.slf4j:slf4j-api:1.7.2'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api":5.3.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params":5.3.2'
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.2'
+
+    components {
+        withModule('org.springframework:spring-beans') {
+            allVariants {
+                withDependencyConstraints {
+                    // Need to patch constraints because snakeyaml is an optional dependency
+                    it.findAll { it.name == 'snakeyaml' }.each { it.version { strictly '1.19' } }
+                }
+            }
+        }
+    }
+}
+
+buildScan {
+
+    // always accept the terms of service
+    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+
+    // always publish a build scan
+    publishAlways()
+}
