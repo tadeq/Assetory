@@ -4,26 +4,25 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
 
-@Component
+import java.util.Map;
 
-// Elastic search annotation.
-@Document(indexName = "assetory", type = "employee")
-public class Employee {
+@Component
+@Document(indexName = "assetory", type = "asset")
+public class Asset {
 
     @Id
     private String id;
     private String name;
-    private String designation;
+    private Map<String, String> fields;
 
-    public Employee() {
+    public Asset() {
     }
 
-    public Employee(String id, String name, String designation) {
+    public Asset(String id, String name, Map<String, String> fields) {
         this.id = id;
         this.name = name;
-        this.designation = designation;
+        this.fields = fields;
     }
-
 
     public String getId() {
         return id;
@@ -41,16 +40,16 @@ public class Employee {
         this.name = name;
     }
 
-    public String getDesignation() {
-        return designation;
+    public Map<String, String> getFields() {
+        return fields;
     }
 
-    public void setDesignation(String designation) {
-        this.designation = designation;
+    public void setFields(Map<String, String> fields) {
+        this.fields = fields;
     }
 
     @Override
     public String toString() {
-        return "Employee [id=" + id + ", name=" + name + ", designation=" + designation + "]";
+        return "Asset [id=" + id + ", name=" + name + ", fields=" + fields.toString() + "]";
     }
 }

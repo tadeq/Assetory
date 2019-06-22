@@ -1,7 +1,5 @@
 package pl.edu.agh.assetory.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,28 +7,28 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import pl.edu.agh.assetory.model.Employee;
-import pl.edu.agh.assetory.service.EmployeeService;
+import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.service.AssetsService;
 
 @RestController
-@RequestMapping(value = "/employee")
-public class EmployeeController {
+@RequestMapping(value = "/assets")
+public class AssetsController {
 
-    private EmployeeService employeeService;
+    private AssetsService assetsService;
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
+    public AssetsController(AssetsService assetsService) {
+        this.assetsService = assetsService;
     }
 
     @PostMapping(value = "/add")
-    public String addEmployee(@RequestBody Employee myEmployee) {
-        employeeService.addEmployee(myEmployee);
+    public String addAsset(@RequestBody Asset newAsset) {
+        assetsService.addAsset(newAsset);
         return "Records saved in the db.";
     }
 
     @GetMapping(value = "/all")
-    public Iterable<Employee> getAllEmployee() {
-        return employeeService.getAllEmployee();
+    public Iterable<Asset> getAllAssets() {
+        return assetsService.getAllAssets();
     }
 }
