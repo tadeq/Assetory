@@ -34,15 +34,16 @@ public class App implements CommandLineRunner {
     public void run(String... strings) throws Exception {
         //Mock asset
         categoriesService.addCategory(new Category("1", "All", "all", ImmutableList.of("Owner")));
-        categoriesService.addCategory(new Category("2", "Software", "all.software", ImmutableList.of("Expiration date")));
+        Category software = new Category("2", "Software", "all.software", ImmutableList.of("Expiration date"));
+        categoriesService.addCategory(software);
         categoriesService.addCategory(new Category("3", "Hardware", "all.hardware", ImmutableList.of("Manufacturer")));
         assetsService.addAsset(new Asset("1", "Asset number one", "Software",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
                         .put("Expiration date", "23.06.2019")
                         .build()));
-
-
+        Iterable<Category> categoryList = categoriesService.findSuperCategories(software);
+        categoryList.forEach(category -> log.info(category.getName()));
     }
 
 }
