@@ -1,8 +1,6 @@
 package pl.edu.agh.assetory.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 
 @Data
@@ -10,6 +8,7 @@ import org.springframework.data.annotation.Id;
 @AllArgsConstructor
 public abstract class Entity {
     @Id
+    @Setter(AccessLevel.NONE)
     private String id;
     private String name;
 }

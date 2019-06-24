@@ -1,4 +1,4 @@
-package pl.edu.agh.assetory.Repository;
+package pl.edu.agh.assetory.repository;
 
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
@@ -16,4 +16,6 @@ public interface AssetsRepository extends ElasticsearchRepository<Asset, String>
      * @return
      */
     List<Asset> findAssetsByName(String name);
+
+    Asset findAssetById(String id);
 }

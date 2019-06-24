@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.service.AssetsService;
@@ -16,14 +17,29 @@ public class AssetsController {
         this.assetsService = assetsService;
     }
 
-    @PostMapping(value = "/add")
-    public String addAsset(@RequestBody Asset newAsset) {
-        assetsService.addAsset(newAsset);
-        return "Records saved in the db.";
+    @PostMapping(value = "/")
+    public ResponseEntity<?> addAsset(@RequestBody Asset newAsset) {
+        return ResponseEntity.ok(assetsService.addAsset(newAsset));
     }
 
     @GetMapping(value = "/")
-    public Iterable<Asset> getAllAssets() {
-        return assetsService.getAllAssets();
+    public ResponseEntity<?> getAllAssets() {
+        return ResponseEntity.ok(assetsService.getAllAssets());
+    }
+
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<?> getAsset(@PathVariable String id) {
+        return ResponseEntity.ok(assetsService.findById(id));
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> deleteAsset(@PathVariable String id) {
+        assetsService.deleteAsset(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/")
+    public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
+        return ResponseEntity.ok(assetsService.updateAsset(asset));
     }
 }

@@ -14,10 +14,10 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Category extends Entity {
-    private String path;
+    private List<String> path;
     private List<String> attributes;
 
-    public Category(String id, String name, String path, List<String> attributes) {
+    public Category(String id, String name, List<String> path, List<String> attributes) {
         super(id, name);
         this.path = path;
         this.attributes = attributes;

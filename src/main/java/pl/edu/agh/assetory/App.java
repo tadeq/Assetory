@@ -1,7 +1,7 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +31,12 @@ public class App implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... strings) throws Exception {
+    public void run(String... strings) {
         //Mock asset
-        categoriesService.addCategory(new Category("1", "All", "all", ImmutableList.of("Owner")));
-        Category software = new Category("2", "Software", "all.software", ImmutableList.of("Expiration date"));
+        categoriesService.addCategory(new Category("1", "All", Lists.newArrayList("all"), Lists.newArrayList("Owner")));
+        Category software = new Category("2", "Software", Lists.newArrayList("all", "software"), Lists.newArrayList("Expiration date"));
         categoriesService.addCategory(software);
-        categoriesService.addCategory(new Category("3", "Hardware", "all.hardware", ImmutableList.of("Manufacturer")));
+        categoriesService.addCategory(new Category("3", "Hardware", Lists.newArrayList("all.hardware"), Lists.newArrayList("Manufacturer")));
         assetsService.addAsset(new Asset("1", "Asset number one", "Software",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
