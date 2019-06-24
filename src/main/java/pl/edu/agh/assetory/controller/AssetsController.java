@@ -22,7 +22,7 @@ public class AssetsController {
         return "Records saved in the db.";
     }
 
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/")
     public Iterable<Asset> getAllAssets() {
         return assetsService.getAllAssets();
     }

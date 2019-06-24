@@ -21,7 +21,7 @@ public class CategoriesController {
         return "Category saved in the db.";
     }
 
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/")
     public Iterable<Category> getAllCategories() {
         return categoriesService.getAllCategories();
     }

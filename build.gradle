@@ -1,5 +1,4 @@
 plugins {
-
     id 'java'
     id 'com.gradle.build-scan' version '2.0.2'
     id 'org.springframework.boot' version '2.1.5.RELEASE'
@@ -33,5 +32,8 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.3.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
+
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
     
 }
