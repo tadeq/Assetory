@@ -19,21 +19,20 @@ java {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-dependencies:2.1.5.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.1.5.RELEASE'
-    implementation 'com.google.guava:guava:27.0.1-jre'
-    implementation 'io.springfox:springfox-swagger2:2.9.2'
-    implementation 'io.springfox:springfox-swagger-ui:2.9.2'
-    implementation 'io.swagger:swagger-models:1.5.22'
-    implementation 'org.slf4j:slf4j-api:1.7.2'
-    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: '3.1.1.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-dependencies', version: getProperty('spring_version')
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: getProperty('spring_version')
+    implementation group: 'io.springfox', name: 'springfox-swagger2', version: getProperty('springfox_version')
+    implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: getProperty('springfox_version')
+    implementation group: 'io.swagger', name: 'swagger-models', version: getProperty('swagger_version')
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: getProperty('slf4j_version')
+    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: getProperty('spring_elasticsearch')
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test:2.1.5.RELEASE'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.3.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: '5.3.2'
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.2'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: getProperty('spring_version')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: getProperty('junit_version')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: getProperty('junit_version')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: getProperty('junit_version')
 
-    compileOnly 'org.projectlombok:lombok:1.18.8'
-    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+    compileOnly group: 'org.projectlombok', name:'lombok', version: getProperty('lombok_version')
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: getProperty('lombok_version')
     
 }
