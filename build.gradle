@@ -6,7 +6,7 @@ plugins {
     id 'application'
 }
 
-mainClassName = 'pl.edu.egh.assetory.App'
+mainClassName = 'pl.edu.agh.assetory.App'
 
 repositories {
     jcenter()
