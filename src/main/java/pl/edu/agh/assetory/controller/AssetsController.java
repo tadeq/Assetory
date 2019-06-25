@@ -17,12 +17,12 @@ public class AssetsController {
         this.assetsService = assetsService;
     }
 
-    @PostMapping(value = "/")
+    @PostMapping
     public ResponseEntity<?> addAsset(@RequestBody Asset newAsset) {
         return ResponseEntity.ok(assetsService.addAsset(newAsset));
     }
 
-    @GetMapping(value = "/")
+    @GetMapping
     public ResponseEntity<?> getAllAssets() {
         return ResponseEntity.ok(assetsService.getAllAssets());
     }
@@ -38,7 +38,7 @@ public class AssetsController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping(value = "/")
+    @PutMapping
     public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
         return ResponseEntity.ok(assetsService.updateAsset(asset));
     }

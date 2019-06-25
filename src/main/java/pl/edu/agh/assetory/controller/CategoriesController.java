@@ -17,17 +17,17 @@ public class CategoriesController {
         this.categoriesService = categoriesService;
     }
 
-    @PostMapping(value = "/")
+    @PostMapping
     public ResponseEntity<?> addCategory(@RequestBody Category newCategory) {
         return ResponseEntity.ok(categoriesService.addCategory(newCategory));
     }
 
-    @GetMapping(value = "/")
+    @GetMapping
     public ResponseEntity<?> getAllCategories() {
         return ResponseEntity.ok(categoriesService.getAllCategories());
     }
 
-    @PutMapping(value = "/")
+    @PutMapping
     public ResponseEntity<?> updateCategory(@RequestBody Category category){
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
