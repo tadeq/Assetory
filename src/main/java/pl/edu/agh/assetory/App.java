@@ -33,16 +33,18 @@ public class App implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         //Mock asset
-        categoriesService.addCategory(new Category("1", "All", Lists.newArrayList("all"), Lists.newArrayList("Owner")));
-        Category software = new Category("2", "Software", Lists.newArrayList("all", "software"), Lists.newArrayList("Expiration date"));
+        categoriesService.addCategory(new Category("1", "All", "all", Lists.newArrayList("Owner")));
+        Category software = new Category("2", "Software", "all" + Category.PATH_SEPARATOR + "software", Lists.newArrayList("Expiration date"));
+        Category subSoftware = new Category("4", "SubSoftware", "all" + Category.PATH_SEPARATOR + "software" + Category.PATH_SEPARATOR + "subsoftware", Lists.newArrayList("Expiration date2"));
+        categoriesService.addCategory(subSoftware);
         categoriesService.addCategory(software);
-        categoriesService.addCategory(new Category("3", "Hardware", Lists.newArrayList("all.hardware"), Lists.newArrayList("Manufacturer")));
+        categoriesService.addCategory(new Category("3", "Hardware", "all" + Category.PATH_SEPARATOR + "hardware", Lists.newArrayList("Manufacturer")));
         assetsService.addAsset(new Asset("1", "Asset number one", "Software",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
                         .put("Expiration date", "23.06.2019")
                         .build()));
-        Iterable<Category> categoryList = categoriesService.findSuperCategories(software);
+        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
         categoryList.forEach(category -> log.info(category.getName()));
     }
 

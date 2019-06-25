@@ -33,7 +33,7 @@ public class AssetsService {
     }
 
     public void deleteAsset(String assetId){
-
+        assetsRepository.deleteById(assetId);
     }
 
     public Iterable<Asset> getAllAssets() {

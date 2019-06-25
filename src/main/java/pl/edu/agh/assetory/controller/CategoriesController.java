@@ -28,33 +28,35 @@ public class CategoriesController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateCategory(@RequestBody Category category){
+    public ResponseEntity<?> updateCategory(@RequestBody Category category) {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<?> getCategory(@PathVariable String id){
+    public ResponseEntity<?> getCategory(@PathVariable String id) {
         return ResponseEntity.ok(categoriesService.findById(id));
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<?> deleteCategory(@PathVariable String id){
+    public ResponseEntity<?> deleteCategory(@PathVariable String id) {
         categoriesService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = "/{id}/subcategories")
-    public ResponseEntity<?> getSubcategories(@PathVariable String id){
-        return ResponseEntity.ok(categoriesService.getSubcategories(id));
+    public ResponseEntity<?> getSubcategories(@PathVariable String id) {
+        Category category = categoriesService.findById(id);
+        return (category == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(categoriesService.getSubcategories(category));
     }
 
-    @PostMapping(value = "/{id}")
-    public ResponseEntity<?> addSubcategory(@PathVariable String id, @RequestBody Category newCategory){
-        newCategory.getPath().add(categoriesService.findById(id).getName());
-        return ResponseEntity.ok(categoriesService.addCategory(newCategory));
+    @GetMapping(value = "/{id}/supercategories")
+    public ResponseEntity<?> getSuperCategories(@PathVariable String id) {
+        Category category = categoriesService.findById(id);
+        return (category == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(categoriesService.getSuperCategories(category));
     }
-
-
-
-
 }
+
+
+
+
+
