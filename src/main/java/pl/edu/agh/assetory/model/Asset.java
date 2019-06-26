@@ -43,4 +43,12 @@ public class Asset extends Entity {
         this.owner = owner;
         this.user = user;
     }
+
+    public boolean hasAllUpdatedAttributes(Asset update) {
+        return this.attributesMap.keySet().containsAll(update.getAttributesMap().keySet());
+    }
+
+    public void updateAttributes(Map<String, String> attributes) {
+        this.attributesMap.putAll(attributes);
+    }
 }

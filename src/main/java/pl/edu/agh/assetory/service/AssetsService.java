@@ -82,5 +82,4 @@ public class AssetsService {
         }
         return assetsRepository.search(queryBuilder);
     }
-
 }

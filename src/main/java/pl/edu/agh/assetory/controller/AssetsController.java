@@ -6,16 +6,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.service.AssetsService;
+import pl.edu.agh.assetory.service.CategoriesService;
 
 @RestController
 @RequestMapping(value = "/assets")
 public class AssetsController {
 
     private AssetsService assetsService;
+    private CategoriesService categoriesService;
 
     @Autowired
-    public AssetsController(AssetsService assetsService) {
+    public AssetsController(AssetsService assetsService, CategoriesService categoriesService) {
         this.assetsService = assetsService;
+        this.categoriesService = categoriesService;
     }
 
     @PostMapping
@@ -44,8 +47,26 @@ public class AssetsController {
     }
 
     @PutMapping
-    public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
-        return ResponseEntity.ok(assetsService.updateAsset(asset));
+    public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
+        if (update.getId() == null) return ResponseEntity.badRequest().build();
+        return assetsService.getById(update.getId())
+                .map(asset -> {
+                    if (update.getCategory() != null && categoriesService.findByName(update.getCategory()).isEmpty()) {
+                        return ResponseEntity.badRequest().build();
+                    } else asset.setCategory(update.getCategory());
+                    if (update.getAttributesMap() != null && !asset.hasAllUpdatedAttributes(update)) {
+                        return ResponseEntity.badRequest().build();
+                    } else asset.updateAttributes(update.getAttributesMap());
+                    if (update.getName() != null) asset.setName(update.getName());
+                    if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
+                    if (update.getBackup() != null) asset.setBackup(update.getBackup());
+                    if (update.getLicense() != null) asset.setLicense(update.getLicense());
+                    if (update.getValue() != null) asset.setValue(update.getValue());
+                    if (update.getOwner() != null) asset.setOwner(update.getOwner());
+                    if (update.getUser() != null) asset.setUser(update.getUser());
+                    return ResponseEntity.ok(assetsService.updateAsset(asset));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping(value = "/filter")
