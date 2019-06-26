@@ -22,21 +22,29 @@ public class AssetsController {
     }
 
     @PostMapping
+    @ApiOperation(value = "adds new asset",
+            response = Asset.class)
     public ResponseEntity<?> addAsset(@RequestBody Asset newAsset) {
         return ResponseEntity.ok(assetsService.addAsset(newAsset));
     }
 
     @GetMapping
+    @ApiOperation(value = "returns all assets",
+            response = Asset.class,
+            responseContainer = "List")
     public ResponseEntity<?> getAllAssets() {
         return ResponseEntity.ok(assetsService.getAllAssets());
     }
 
     @GetMapping(value = "/{id}")
+    @ApiOperation(value = "returns asset with given id",
+            response = Asset.class)
     public ResponseEntity<?> getAsset(@PathVariable String id) {
         return ResponseEntity.of(assetsService.getById(id));
     }
 
     @DeleteMapping(value = "/{id}")
+    @ApiOperation(value = "deletes asset with given id")
     public ResponseEntity<?> deleteAsset(@PathVariable String id) {
         return assetsService.getById(id)
                 .map(asset -> {
@@ -47,6 +55,9 @@ public class AssetsController {
     }
 
     @PutMapping
+    @ApiOperation(value = "updates asset given in body",
+            notes = "asset is recognized by id, all attributes from before the operation have to be provided",
+            response = Asset.class)
     public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
         if (update.getId() == null) return ResponseEntity.badRequest().build();
         return assetsService.getById(update.getId())
@@ -70,8 +81,8 @@ public class AssetsController {
     }
 
     @PostMapping(value = "/filter")
-    @ApiOperation(value = "Query that filter all assets",
-            notes = "Filter all assets based on fields passed in assetTemplate. These fields are: id, name, category, attributesMap")
+    @ApiOperation(value = "Filters all assets",
+            notes = "Filter all assets based on fields given in body. These fields are: id, name, category, attributesMap")
     public ResponseEntity<?> filterAssetsByFields(@RequestBody Asset assetTemplate) {
         return ResponseEntity.ok(assetsService.filterAssetsByFields(assetTemplate));
     }

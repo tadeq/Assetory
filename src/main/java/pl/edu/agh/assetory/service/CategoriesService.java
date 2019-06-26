@@ -45,6 +45,10 @@ public class CategoriesService {
         return categoriesRepository.findAll();
     }
 
+    public void deleteCategoryWithAssets(String categoryId) {
+
+    }
+
     /**
      * @param category
      * @return Collection of all super categories of a given category and this category as well.
