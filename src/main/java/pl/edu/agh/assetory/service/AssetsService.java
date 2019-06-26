@@ -62,6 +62,24 @@ public class AssetsService {
                                 .matchQuery(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
             }
         }
+        if (assetTemplate.getLocalisation() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.LOCALISATION_FIELD_KEY, assetTemplate.getLocalisation()));
+        }
+        if (assetTemplate.getBackup() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.BACKUP_FIELD_KEY, assetTemplate.getBackup()));
+        }
+        if (assetTemplate.getLicense() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.LICENSE_FIELD_KEY, assetTemplate.getLicense()));
+        }
+        if (assetTemplate.getValue() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.VALUE_FIELD_KEY, assetTemplate.getValue().toPlainString()));
+        }
+        if (assetTemplate.getUser() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.USER_FIELD_KEY, assetTemplate.getUser()));
+        }
+        if (assetTemplate.getOwner() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.OWNER_FIELD_KEY, assetTemplate.getOwner()));
+        }
         return assetsRepository.search(queryBuilder);
     }
 

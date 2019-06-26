@@ -14,6 +14,8 @@ import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
+import java.math.BigDecimal;
+
 @SpringBootApplication
 @PropertySource("classpath:application.properties")
 public class App implements CommandLineRunner {
@@ -39,13 +41,25 @@ public class App implements CommandLineRunner {
         categoriesService.addCategory(subSoftware);
         categoriesService.addCategory(software);
         categoriesService.addCategory(new Category("3", "Hardware", "all" + Category.PATH_SEPARATOR + "hardware", Lists.newArrayList("Manufacturer")));
-        assetsService.addAsset(new Asset("1", "Asset number one", "Software",
+        assetsService.addAsset(createSampleAsset());
+        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
+        categoryList.forEach(category -> log.info(category.getName()));
+    }
+
+    private Asset createSampleAsset() {
+        return new Asset("1",
+                "Asset number one",
+                "Software",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
                         .put("Expiration date", "23.06.2019")
-                        .build()));
-        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
-        categoryList.forEach(category -> log.info(category.getName()));
+                        .build(),
+                "localisation1",
+                "backup1",
+                "license1",
+                new BigDecimal(123),
+                "owner1",
+                "user1");
     }
 
 }
