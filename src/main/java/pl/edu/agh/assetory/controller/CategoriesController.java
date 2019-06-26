@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.controller;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class CategoriesController {
     }
 
     @GetMapping(value = "/{id}/subcategories")
+    @ApiOperation(value = "All subcategories of a given category without this category.")
     public ResponseEntity<?> getSubcategories(@PathVariable String id) {
         return categoriesService
                 .findById(id)
@@ -56,6 +58,7 @@ public class CategoriesController {
     }
 
     @GetMapping(value = "/{id}/supercategories")
+    @ApiOperation(value = "All super categories of a given category and this category as well.")
     public ResponseEntity<?> getSuperCategories(@PathVariable String id) {
         return categoriesService
                 .findById(id)
