@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.controller;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class AssetsController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> getAsset(@PathVariable String id) {
-        return ResponseEntity.ok(assetsService.findById(id));
+        return ResponseEntity.ok(assetsService.getById(id));
     }
 
     @DeleteMapping(value = "/{id}")
@@ -41,5 +42,12 @@ public class AssetsController {
     @PutMapping
     public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
         return ResponseEntity.ok(assetsService.updateAsset(asset));
+    }
+
+    @PostMapping(value = "/filter")
+    @ApiOperation(value = "Query that filter all assets",
+            notes = "Filter all assets based on fields passed in assetTemplate. These fields are: id, name, category, attributesMap")
+    public ResponseEntity<?> filterAssetsByFields(@RequestBody Asset assetTemplate) {
+        return ResponseEntity.ok(assetsService.filterAssetsByFields(assetTemplate));
     }
 }

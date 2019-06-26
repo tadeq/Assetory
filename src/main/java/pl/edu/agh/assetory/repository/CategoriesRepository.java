@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CategoriesRepository extends ElasticsearchRepository<Category, String> {
 
-    List<Category> findCategoriesByName(String name);
+    List<Category> getCategoriesByName(String name);
 
-    Category findCategoryById(String id);
+    Category getCategoryById(String id);
 }

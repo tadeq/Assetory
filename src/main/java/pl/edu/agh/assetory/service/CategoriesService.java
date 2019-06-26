@@ -21,11 +21,11 @@ public class CategoriesService {
     private CategoriesRepository categoriesRepository;
 
     public Category findById(String categoryId) {
-        return categoriesRepository.findCategoryById(categoryId);
+        return categoriesRepository.getCategoryById(categoryId);
     }
 
     public List<Category> findByName(String categoryName) {
-        return categoriesRepository.findCategoriesByName(categoryName);
+        return categoriesRepository.getCategoriesByName(categoryName);
     }
 
     public Category addCategory(Category newCategory) {

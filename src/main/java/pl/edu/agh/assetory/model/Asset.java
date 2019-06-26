@@ -14,6 +14,8 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 public class Asset extends Entity {
+    public static String CATEGORY_FIELD_KEY = "category";
+    public static String ATTRIBUTES_MAP_FIELD_KEY = "attributesMap";
     private String category;
     private Map<String, String> attributesMap;
 

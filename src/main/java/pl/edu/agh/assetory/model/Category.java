@@ -18,7 +18,7 @@ public class Category extends Entity {
     private List<String> attributes;
     public static String PATH_SEPARATOR = ":";
     public static String PATH_FIELD_KEY = "path";
-    public static String NAME_FIELD_KEY = "name";
+    public static String ATTRIBUTES_FIELD_KEY = "attributes";
     public Category(String id, String name, String path, List<String> attributes) {
         super(id, name);
         this.path = path;

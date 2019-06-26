@@ -9,7 +9,7 @@ import java.util.List;
 @Repository
 public interface AssetsRepository extends ElasticsearchRepository<Asset, String> {
 
-    List<Asset> findAssetsByName(String name);
+    List<Asset> getAssetsByName(String name);
 
-    Asset findAssetById(String id);
+    Asset getAssetById(String id);
 }

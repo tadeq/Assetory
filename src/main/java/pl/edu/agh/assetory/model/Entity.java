@@ -7,6 +7,8 @@ import org.springframework.data.annotation.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class Entity {
+    public static String NAME_FIELD_KEY = "name";
+    public static String ID_FIELD_KEY = "id";
     @Id
     @Setter(AccessLevel.NONE)
     private String id;
