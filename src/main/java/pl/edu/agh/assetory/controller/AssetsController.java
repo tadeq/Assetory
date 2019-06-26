@@ -30,13 +30,17 @@ public class AssetsController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> getAsset(@PathVariable String id) {
-        return ResponseEntity.ok(assetsService.getById(id));
+        return ResponseEntity.of(assetsService.getById(id));
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> deleteAsset(@PathVariable String id) {
-        assetsService.deleteAsset(id);
-        return ResponseEntity.noContent().build();
+        return assetsService.getById(id)
+                .map(asset -> {
+                    assetsService.deleteAsset(id);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping

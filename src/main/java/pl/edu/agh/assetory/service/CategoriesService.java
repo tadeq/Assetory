@@ -12,6 +12,7 @@ import pl.edu.agh.assetory.repository.CategoriesRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,8 +21,8 @@ public class CategoriesService {
     @Qualifier("categoriesRepository")
     private CategoriesRepository categoriesRepository;
 
-    public Category findById(String categoryId) {
-        return categoriesRepository.getCategoryById(categoryId);
+    public Optional<Category> findById(String categoryId) {
+        return categoriesRepository.findById(categoryId);
     }
 
     public List<Category> findByName(String categoryName) {

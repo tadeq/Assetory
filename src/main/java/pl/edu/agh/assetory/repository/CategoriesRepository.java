@@ -8,6 +8,4 @@ import java.util.List;
 public interface CategoriesRepository extends ElasticsearchRepository<Category, String> {
 
     List<Category> getCategoriesByName(String name);
-
-    Category getCategoryById(String id);
 }

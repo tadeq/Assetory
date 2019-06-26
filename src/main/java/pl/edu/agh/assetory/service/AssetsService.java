@@ -5,11 +5,12 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import pl.edu.agh.assetory.repository.AssetsRepository;
 import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.repository.AssetsRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
@@ -19,8 +20,8 @@ public class AssetsService {
     @Qualifier("assetsRepository")
     private AssetsRepository assetsRepository;
 
-    public Asset getById(String assetId){
-        return assetsRepository.getAssetById(assetId);
+    public Optional<Asset> getById(String assetId) {
+        return assetsRepository.findById(assetId);
     }
 
     public List<Asset> getByName(String name) {
@@ -35,7 +36,7 @@ public class AssetsService {
         return assetsRepository.save(asset);
     }
 
-    public void deleteAsset(String assetId){
+    public void deleteAsset(String assetId) {
         assetsRepository.deleteById(assetId);
     }
 
@@ -45,20 +46,20 @@ public class AssetsService {
 
     public Iterable<Asset> filterAssetsByFields(Asset assetTemplate) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        if(assetTemplate.getId() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.ID_FIELD_KEY, assetTemplate.getId()));
+        if (assetTemplate.getId() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.idsQuery().addIds(assetTemplate.getId()).types("asset"));
         }
-        if(assetTemplate.getName() != null) {
+        if (assetTemplate.getName() != null) {
             queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.NAME_FIELD_KEY, assetTemplate.getName()));
         }
-        if(assetTemplate.getCategory() != null) {
+        if (assetTemplate.getCategory() != null) {
             queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.CATEGORY_FIELD_KEY, assetTemplate.getCategory()));
         }
-        if(assetTemplate.getAttributesMap() != null) {
-            for(Map.Entry<String, String> entry : assetTemplate.getAttributesMap().entrySet()) {
+        if (assetTemplate.getAttributesMap() != null) {
+            for (Map.Entry<String, String> entry : assetTemplate.getAttributesMap().entrySet()) {
                 queryBuilder = queryBuilder
                         .must(QueryBuilders
-                        .matchQuery(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
+                                .matchQuery(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
             }
         }
         return assetsRepository.search(queryBuilder);
