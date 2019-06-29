@@ -1,7 +1,7 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,8 @@ import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
+
+import java.math.BigDecimal;
 
 @SpringBootApplication
 @PropertySource("classpath:application.properties")
@@ -31,19 +33,33 @@ public class App implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... strings) throws Exception {
+    public void run(String... strings) {
         //Mock asset
-        categoriesService.addCategory(new Category("1", "All", "all", ImmutableList.of("Owner")));
-        Category software = new Category("2", "Software", "all.software", ImmutableList.of("Expiration date"));
+        categoriesService.addCategory(new Category("1", "All", "all", Lists.newArrayList("Owner")));
+        Category software = new Category("2", "Software", "all" + Category.PATH_SEPARATOR + "software", Lists.newArrayList("Expiration date"));
+        Category subSoftware = new Category("4", "SubSoftware", "all" + Category.PATH_SEPARATOR + "software" + Category.PATH_SEPARATOR + "subsoftware", Lists.newArrayList("Expiration date2"));
+        categoriesService.addCategory(subSoftware);
         categoriesService.addCategory(software);
-        categoriesService.addCategory(new Category("3", "Hardware", "all.hardware", ImmutableList.of("Manufacturer")));
-        assetsService.addAsset(new Asset("1", "Asset number one", "Software",
+        categoriesService.addCategory(new Category("3", "Hardware", "all" + Category.PATH_SEPARATOR + "hardware", Lists.newArrayList("Manufacturer")));
+        assetsService.addAsset(createSampleAsset());
+        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
+        categoryList.forEach(category -> log.info(category.getName()));
+    }
+
+    private Asset createSampleAsset() {
+        return new Asset("1",
+                "Asset number one",
+                "Software",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
                         .put("Expiration date", "23.06.2019")
-                        .build()));
-        Iterable<Category> categoryList = categoriesService.findSuperCategories(software);
-        categoryList.forEach(category -> log.info(category.getName()));
+                        .build(),
+                "localisation1",
+                "backup1",
+                "license1",
+                new BigDecimal(123),
+                "owner1",
+                "user1");
     }
 
 }

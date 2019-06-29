@@ -16,7 +16,9 @@ import java.util.List;
 public class Category extends Entity {
     private String path;
     private List<String> attributes;
-
+    public static String PATH_SEPARATOR = ":";
+    public static String PATH_FIELD_KEY = "path";
+    public static String ATTRIBUTES_FIELD_KEY = "attributes";
     public Category(String id, String name, String path, List<String> attributes) {
         super(id, name);
         this.path = path;
