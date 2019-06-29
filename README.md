@@ -1,4 +1,6 @@
 # Assetory
+[![Build Status](https://travis-ci.com/tadeq/Assetory.svg?branch=master)](https://travis-ci.com/tadeq/Assetory)  
+
 Assetory is a system supporting IT assets inventory. This repository contains backend application implemented using Spring Boot and Elasticsearch.
 ## Prerequisites
 * [Elasticsearch 5.6.16](https://www.elastic.co/downloads/past-releases/elasticsearch-5-6-16?fbclid=IwAR1Sl5omtFpABRCbjQa6xJVUMK9ujPdEEUECETpI9GtJvhNEuFggP_ap-XI)
@@ -15,4 +17,3 @@ By default application will run on port 5444.
 http://localhost:5444/swagger-ui.html#/
 2. Start ElasticSearch Head in Chrome and connect to port 9200.
 ![screen](/src/main/resources/ElasticsearchHead.png)
-             
