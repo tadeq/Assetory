@@ -24,9 +24,25 @@ public class CategoriesController {
 
     @PostMapping
     @ApiOperation(value = "adds new category",
+            notes = "adds category that doesn't have a parent category",
             response = Category.class)
     public ResponseEntity<?> addCategory(@RequestBody Category newCategory) {
         return ResponseEntity.ok(categoriesService.addCategory(newCategory));
+    }
+
+    @PostMapping(value = "/{id}")
+    @ApiOperation(value = "adds new subcategory",
+            notes = "adds category that will be a subcategory of the category with given id")
+    public ResponseEntity<?> addSubcategory(@PathVariable String id, @RequestBody Category subcategory) {
+        return categoriesService.findById(id)
+                .map(category -> {
+                    subcategory.setParentId(category.getId());
+                    Category savedSubcategory = categoriesService.addCategory(subcategory);
+                    category.addSubcategory(savedSubcategory.getId());
+                    categoriesService.addCategory(category);
+                    return ResponseEntity.ok(savedSubcategory);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping
@@ -53,7 +69,7 @@ public class CategoriesController {
 
     @DeleteMapping(value = "/{id}")
     @ApiOperation(value = "deletes category with given id",
-            notes = "assets will be moved to first supercategory")
+            notes = "assets will be moved to first super category")
     public ResponseEntity<?> deleteCategoryWithoutAssets(@PathVariable String id) {
         return categoriesService.findById(id)
                 .map(category -> {
