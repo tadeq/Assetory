@@ -62,9 +62,9 @@ public class AssetsController {
         if (update.getId() == null) return ResponseEntity.badRequest().build();
         return assetsService.getById(update.getId())
                 .map(asset -> {
-                    if (update.getCategory() != null && categoriesService.findByName(update.getCategory()).isEmpty()) {
+                    if (update.getCategoryId() != null && categoriesService.findByName(update.getCategoryId()).isEmpty()) {
                         return ResponseEntity.badRequest().build();
-                    } else asset.setCategory(update.getCategory());
+                    } else asset.setCategoryId(update.getCategoryId());
                     if (update.getAttributesMap() != null && !asset.hasAllUpdatedAttributes(update)) {
                         return ResponseEntity.badRequest().build();
                     } else asset.updateAttributes(update.getAttributesMap());
@@ -82,7 +82,7 @@ public class AssetsController {
 
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
-            notes = "Filter all assets based on fields given in body. These fields are: id, name, category, attributesMap")
+            notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
     public ResponseEntity<?> filterAssetsByFields(@RequestBody Asset assetTemplate) {
         return ResponseEntity.ok(assetsService.filterAssetsByFields(assetTemplate));
     }

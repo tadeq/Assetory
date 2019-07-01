@@ -5,7 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Category;
+import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.service.CategoriesService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping(value = "/categories")
@@ -34,7 +39,7 @@ public class CategoriesController {
 
     @PutMapping
     @ApiOperation(value = "updates category given in body",
-            notes = "category is recognized by id, category name and attributes list can be updated")
+            notes = "category is recognized by id, categoryId name and attributes list can be updated")
     public ResponseEntity<?> updateCategory(@RequestBody Category category) {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
@@ -69,27 +74,19 @@ public class CategoriesController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/{id}/subcategories")
-    @ApiOperation(value = "returns all subcategories of category with given id",
-            notes = "given category is not included in response",
-            response = Category.class,
-            responseContainer = "List")
-    public ResponseEntity<?> getSubcategories(@PathVariable String id) {
-        return categoriesService
-                .findById(id)
-                .map(category -> ResponseEntity.ok(categoriesService.getSubcategories(category)))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping(value = "/trees")
+    public ResponseEntity<?> getCategoryTrees() {
+        List<CategoryTree> categoryTrees = StreamSupport
+                .stream(categoriesService.getRootCategories().spliterator(), false)
+                .map(category -> categoriesService.createCategoryTree(category))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categoryTrees);
     }
 
-    @GetMapping(value = "/{id}/supercategories")
-    @ApiOperation(value = "returns all super categories of category with given id",
-            notes = "given category in response as well",
-            response = Category.class,
-            responseContainer = "List")
-    public ResponseEntity<?> getSuperCategories(@PathVariable String id) {
-        return categoriesService
-                .findById(id)
-                .map(category -> ResponseEntity.ok(categoriesService.getSuperCategories(category)))
+    @GetMapping(value = "/{id}/attributes")
+    public ResponseEntity<?> getCategoryAttributes(@PathVariable String id) {
+        return categoriesService.findById(id)
+                .map(category -> ResponseEntity.ok(categoriesService.getCategoryAttributes(category)))
                 .orElse(ResponseEntity.notFound().build());
     }
 }

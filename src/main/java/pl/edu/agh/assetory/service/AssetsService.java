@@ -52,8 +52,8 @@ public class AssetsService {
         if (assetTemplate.getName() != null) {
             queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.NAME_FIELD_KEY, assetTemplate.getName()));
         }
-        if (assetTemplate.getCategory() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.CATEGORY_FIELD_KEY, assetTemplate.getCategory()));
+        if (assetTemplate.getCategoryId() != null) {
+            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.CATEGORY_ID_FIELD_KEY, assetTemplate.getCategoryId()));
         }
         if (assetTemplate.getAttributesMap() != null) {
             for (Map.Entry<String, String> entry : assetTemplate.getAttributesMap().entrySet()) {

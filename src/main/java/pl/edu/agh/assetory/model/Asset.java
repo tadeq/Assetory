@@ -14,8 +14,8 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-public class Asset extends Entity {
-    public static String CATEGORY_FIELD_KEY = "category";
+public class Asset extends DBEntity {
+    public static String CATEGORY_ID_FIELD_KEY = "categoryId";
     public static String ATTRIBUTES_MAP_FIELD_KEY = "attributesMap";
     public static String LOCALISATION_FIELD_KEY = "localisation";
     public static String BACKUP_FIELD_KEY = "backup";
@@ -23,7 +23,7 @@ public class Asset extends Entity {
     public static String VALUE_FIELD_KEY = "value";
     public static String OWNER_FIELD_KEY = "owner";
     public static String USER_FIELD_KEY = "user";
-    private String category;
+    private String categoryId;
     private Map<String, String> attributesMap;
     private String localisation;
     private String backup;
@@ -32,9 +32,9 @@ public class Asset extends Entity {
     private String owner;
     private String user;
 
-    public Asset(String id, String name, String category, Map<String, String> attributesMap, String localisation, String backup, String license, BigDecimal value, String owner, String user) {
+    public Asset(String id, String name, String categoryId, Map<String, String> attributesMap, String localisation, String backup, String license, BigDecimal value, String owner, String user) {
         super(id, name);
-        this.category = category;
+        this.categoryId = categoryId;
         this.attributesMap = attributesMap;
         this.localisation = localisation;
         this.backup = backup;

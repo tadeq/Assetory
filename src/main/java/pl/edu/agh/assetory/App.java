@@ -34,22 +34,25 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        //Mock asset
-        categoriesService.addCategory(new Category("1", "All", "all", Lists.newArrayList("Owner")));
-        Category software = new Category("2", "Software", "all" + Category.PATH_SEPARATOR + "software", Lists.newArrayList("Expiration date"));
-        Category subSoftware = new Category("4", "SubSoftware", "all" + Category.PATH_SEPARATOR + "software" + Category.PATH_SEPARATOR + "subsoftware", Lists.newArrayList("Expiration date2"));
+        Category all = new Category("1", "All", Lists.newArrayList("Owner"));
+        Category software = new Category("2", "Software", Lists.newArrayList("Expiration date"), all.getId());
+        all.addSubcategory(software.getId());
+        Category subSoftware = new Category("4", "SubSoftware", Lists.newArrayList("Expiration date2"), software.getId());
+        software.addSubcategory(subSoftware.getId());
+        Category hardware = new Category("3", "Hardware", Lists.newArrayList("Manufacturer"), all.getId());
+        all.addSubcategory(hardware.getId());
+        categoriesService.addCategory(all);
+        categoriesService.addCategory(hardware);
         categoriesService.addCategory(subSoftware);
         categoriesService.addCategory(software);
-        categoriesService.addCategory(new Category("3", "Hardware", "all" + Category.PATH_SEPARATOR + "hardware", Lists.newArrayList("Manufacturer")));
+
         assetsService.addAsset(createSampleAsset());
-        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
-        categoryList.forEach(category -> log.info(category.getName()));
     }
 
     private Asset createSampleAsset() {
         return new Asset("1",
                 "Asset number one",
-                "Software",
+                "2",
                 ImmutableMap.<String, String>builder()
                         .put("Owner", "PREZES")
                         .put("Expiration date", "23.06.2019")
