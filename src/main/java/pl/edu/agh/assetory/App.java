@@ -15,6 +15,7 @@ import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @SpringBootApplication
 @PropertySource("classpath:application.properties")
@@ -46,11 +47,11 @@ public class App implements CommandLineRunner {
         categoriesService.addCategory(subSoftware);
         categoriesService.addCategory(software);
 
-        assetsService.addAsset(createSampleAsset());
+        createSampleAssets().forEach(asset -> assetsService.addAsset(asset));
     }
 
-    private Asset createSampleAsset() {
-        return new Asset("1",
+    private List<Asset> createSampleAssets() {
+        Asset asset1 = new Asset("1",
                 "Asset number one",
                 "2",
                 ImmutableMap.<String, String>builder()
@@ -63,6 +64,33 @@ public class App implements CommandLineRunner {
                 new BigDecimal(123),
                 "owner1",
                 "user1");
+        Asset asset2 = new Asset("2",
+                "Asset number two",
+                "1",
+                ImmutableMap.<String, String>builder()
+                        .put("Owner", "PREZES1")
+                        .build(),
+                "localisation2",
+                "backup2",
+                "license2",
+                new BigDecimal(13),
+                "owner2",
+                "user2");
+        Asset asset3 = new Asset("3",
+                "Asset number tree",
+                "3",
+                ImmutableMap.<String, String>builder()
+                        .put("Owner", "PREZES2")
+                        .put("Expiration date", "23.06.2019")
+                        .put("Expiration date2", "24.06.2019")
+                        .build(),
+                "localisation3",
+                "backup3",
+                "license3",
+                new BigDecimal(1),
+                "owner3",
+                "user3");
+        return Lists.newArrayList(asset1, asset2, asset3);
     }
 
 }

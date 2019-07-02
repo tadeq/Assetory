@@ -10,10 +10,7 @@ import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping(value = "/assets")
@@ -107,7 +104,11 @@ public class AssetsController {
                             .map(categoriesService::findById)
                             .filter(Optional::isPresent)
                             .map(Optional::get)
-                            .map(categoriesService::getSubcategoriesIds)
+                            .map(c -> {
+                                Set<String> subcategoriesIds = categoriesService.getSubcategoriesIds(c);
+                                subcategoriesIds.add(c.getId());
+                                return subcategoriesIds;
+                            })
                             .reduce(new HashSet<>(), (a, b) ->
                             {
                                 a.addAll(b);
