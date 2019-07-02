@@ -9,8 +9,10 @@ import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -71,6 +73,18 @@ public class CategoriesService {
         } else {
             return category.getAttributes();
         }
+    }
+
+    public Set<String> getSubcategoriesIds(Category category) {
+        Set<String> idsSet = new HashSet<>(category.getSubcategoriesIds());
+        category.getSubcategoriesIds().stream()
+                .map(this::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::getSubcategoriesIds)
+                .forEach(idsSet::addAll);
+        return idsSet;
+
     }
 
 

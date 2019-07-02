@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.repository.AssetsRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -44,42 +47,46 @@ public class AssetsService {
         return assetsRepository.findAll();
     }
 
-    public Iterable<Asset> filterAssetsByFields(Asset assetTemplate) {
+    public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        if (assetTemplate.getId() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.idsQuery().addIds(assetTemplate.getId()).types("asset"));
+        if (assetsFilter.getCategoryId() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.CATEGORY_ID_FIELD_KEY, assetsFilter.getCategoryId()));
         }
-        if (assetTemplate.getName() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.NAME_FIELD_KEY, assetTemplate.getName()));
+        if (assetsFilter.getName() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.NAME_FIELD_KEY, assetsFilter.getName()));
         }
-        if (assetTemplate.getCategoryId() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.CATEGORY_ID_FIELD_KEY, assetTemplate.getCategoryId()));
-        }
-        if (assetTemplate.getAttributesMap() != null) {
-            for (Map.Entry<String, String> entry : assetTemplate.getAttributesMap().entrySet()) {
-                queryBuilder = queryBuilder
-                        .must(QueryBuilders
-                                .matchQuery(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
+        if (assetsFilter.getAttributesMap() != null) {
+            for (Map.Entry<String, List<String>> entry : assetsFilter.getAttributesMap().entrySet()) {
+                queryBuilder = queryBuilder.must(getQueryForField(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
             }
         }
-        if (assetTemplate.getLocalisation() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.LOCALISATION_FIELD_KEY, assetTemplate.getLocalisation()));
+        if (assetsFilter.getLocalisation() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.LOCALISATION_FIELD_KEY, assetsFilter.getLocalisation()));
         }
-        if (assetTemplate.getBackup() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.BACKUP_FIELD_KEY, assetTemplate.getBackup()));
+        if (assetsFilter.getBackup() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.BACKUP_FIELD_KEY, assetsFilter.getBackup()));
         }
-        if (assetTemplate.getLicense() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.LICENSE_FIELD_KEY, assetTemplate.getLicense()));
+        if (assetsFilter.getLicense() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.LICENSE_FIELD_KEY, assetsFilter.getLicense()));
         }
-        if (assetTemplate.getValue() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.VALUE_FIELD_KEY, assetTemplate.getValue().toPlainString()));
+        if (assetsFilter.getValue() != null) {
+            List<String> valueList = assetsFilter.getValue().stream().map(BigDecimal::toPlainString).collect(Collectors.toList());
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.VALUE_FIELD_KEY, valueList));
         }
-        if (assetTemplate.getUser() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.USER_FIELD_KEY, assetTemplate.getUser()));
+        if (assetsFilter.getUser() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.USER_FIELD_KEY, assetsFilter.getUser()));
         }
-        if (assetTemplate.getOwner() != null) {
-            queryBuilder = queryBuilder.must(QueryBuilders.matchQuery(Asset.OWNER_FIELD_KEY, assetTemplate.getOwner()));
+        if (assetsFilter.getOwner() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(Asset.OWNER_FIELD_KEY, assetsFilter.getOwner()));
         }
         return assetsRepository.search(queryBuilder);
+    }
+
+    private BoolQueryBuilder getQueryForField(String fieldName, List<String> filterValues) {
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        for (String value : filterValues) {
+            query = query.should(QueryBuilders.matchQuery(fieldName, value));
+        }
+        return query;
     }
 }

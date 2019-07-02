@@ -5,8 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.model.AssetsFilter;
+import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/assets")
@@ -91,7 +98,27 @@ public class AssetsController {
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
             notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
-    public ResponseEntity<?> filterAssetsByFields(@RequestBody Asset assetTemplate) {
-        return ResponseEntity.ok(assetsService.filterAssetsByFields(assetTemplate));
+    public ResponseEntity<?> filterAssetsByFields(@RequestBody AssetsFilter assetsFilter) {
+        if (assetsFilter.getTreeCategory() == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            List<String> possibleCategoryIds = new ArrayList<>(Optional.ofNullable(assetsFilter.getCategoryId())
+                    .map(ids -> ids.stream()
+                            .map(categoriesService::findById)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .map(categoriesService::getSubcategoriesIds)
+                            .reduce(new HashSet<>(), (a, b) ->
+                            {
+                                a.addAll(b);
+                                return new HashSet<>(a);
+                            })
+                    ).orElseGet(() -> {
+                        Category treeCategory = categoriesService.findById(assetsFilter.getTreeCategory()).get();
+                        return categoriesService.getSubcategoriesIds(treeCategory);
+                    }));
+            assetsFilter.setCategoryId(possibleCategoryIds);
+            return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
+        }
     }
 }
