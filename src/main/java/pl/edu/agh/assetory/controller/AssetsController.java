@@ -62,12 +62,20 @@ public class AssetsController {
         if (update.getId() == null) return ResponseEntity.badRequest().build();
         return assetsService.getById(update.getId())
                 .map(asset -> {
-                    if (update.getCategoryId() != null && categoriesService.findByName(update.getCategoryId()).isEmpty()) {
-                        return ResponseEntity.badRequest().build();
-                    } else asset.setCategoryId(update.getCategoryId());
-                    if (update.getAttributesMap() != null && !asset.hasAllUpdatedAttributes(update)) {
-                        return ResponseEntity.badRequest().build();
-                    } else asset.updateAttributes(update.getAttributesMap());
+                    if (update.getCategoryId() != null) {
+                        if (categoriesService.findById(update.getCategoryId()).isPresent()) {
+                            asset.setCategoryId(update.getCategoryId());
+                        } else {
+                            return ResponseEntity.badRequest().build();
+                        }
+                    }
+                    if (update.getAttributesMap() != null) {
+                        if (!asset.hasAllUpdatedAttributes(update)) {
+                            asset.updateAttributes(update.getAttributesMap());
+                        } else {
+                            return ResponseEntity.badRequest().build();
+                        }
+                    }
                     if (update.getName() != null) asset.setName(update.getName());
                     if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
                     if (update.getBackup() != null) asset.setBackup(update.getBackup());
