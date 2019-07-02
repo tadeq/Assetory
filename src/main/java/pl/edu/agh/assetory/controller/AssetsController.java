@@ -11,6 +11,7 @@ import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/assets")
@@ -109,11 +110,8 @@ public class AssetsController {
                                 subcategoriesIds.add(c.getId());
                                 return subcategoriesIds;
                             })
-                            .reduce(new HashSet<>(), (a, b) ->
-                            {
-                                a.addAll(b);
-                                return new HashSet<>(a);
-                            })
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet())
                     ).orElseGet(() -> {
                         Category treeCategory = categoriesService.findById(assetsFilter.getTreeCategory()).get();
                         return categoriesService.getSubcategoriesIds(treeCategory);
