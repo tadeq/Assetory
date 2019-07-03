@@ -100,23 +100,19 @@ public class AssetsController {
         if (assetsFilter.getTreeCategory() == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            List<String> possibleCategoryIds = new ArrayList<>(Optional.ofNullable(assetsFilter.getCategoryId())
+            List<String> matchingCategoryIds = new ArrayList<>(Optional.ofNullable(assetsFilter.getCategoryId())
                     .map(ids -> ids.stream()
                             .map(categoriesService::findById)
                             .filter(Optional::isPresent)
                             .map(Optional::get)
-                            .map(c -> {
-                                Set<String> subcategoriesIds = categoriesService.getSubcategoriesIds(c);
-                                subcategoriesIds.add(c.getId());
-                                return subcategoriesIds;
-                            })
+                            .map(categoriesService::getMatchingCategoryIds)
                             .flatMap(Set::stream)
                             .collect(Collectors.toSet())
                     ).orElseGet(() -> {
                         Category treeCategory = categoriesService.findById(assetsFilter.getTreeCategory()).get();
-                        return categoriesService.getSubcategoriesIds(treeCategory);
+                        return categoriesService.getMatchingCategoryIds(treeCategory);
                     }));
-            assetsFilter.setCategoryId(possibleCategoryIds);
+            assetsFilter.setCategoryId(matchingCategoryIds);
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
     }

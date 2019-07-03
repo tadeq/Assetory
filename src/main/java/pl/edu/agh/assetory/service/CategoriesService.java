@@ -75,13 +75,14 @@ public class CategoriesService {
         }
     }
 
-    public Set<String> getSubcategoriesIds(Category category) {
+    public Set<String> getMatchingCategoryIds(Category category) {
         Set<String> idsSet = new HashSet<>(category.getSubcategoriesIds());
+        idsSet.add(category.getId());
         category.getSubcategoriesIds().stream()
                 .map(this::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(this::getSubcategoriesIds)
+                .map(this::getMatchingCategoryIds)
                 .forEach(idsSet::addAll);
         return idsSet;
 
