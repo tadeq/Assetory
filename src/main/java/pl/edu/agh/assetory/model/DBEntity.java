@@ -7,10 +7,9 @@ import org.springframework.data.annotation.Id;
 @NoArgsConstructor
 @AllArgsConstructor
 public abstract class DBEntity {
-    public static String NAME_FIELD_KEY = "name";
-    public static String ID_FIELD_KEY = "id";
+    public static final String NAME_FIELD_KEY = "name";
+    public static final String ID_FIELD_KEY = "id";
     @Id
     @Setter(AccessLevel.NONE)
     private String id;
-    private String name;
 }

@@ -32,6 +32,7 @@ dependencies {
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: getProperty('junit_version')
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: getProperty('junit_version')
 
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: getProperty('jackson_version')
     compileOnly group: 'org.projectlombok', name:'lombok', version: getProperty('lombok_version')
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: getProperty('lombok_version')
     

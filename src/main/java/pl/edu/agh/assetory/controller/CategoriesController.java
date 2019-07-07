@@ -36,7 +36,7 @@ public class CategoriesController {
     public ResponseEntity<?> addSubcategory(@PathVariable String id, @RequestBody Category subcategory) {
         return categoriesService.findById(id)
                 .map(category -> {
-                    subcategory.setParentId(category.getId());
+                    subcategory.setParentCategoryId(category.getId());
                     Category savedSubcategory = categoriesService.addCategory(subcategory);
                     category.addSubcategory(savedSubcategory.getId());
                     categoriesService.addCategory(category);
@@ -55,7 +55,7 @@ public class CategoriesController {
 
     @PutMapping
     @ApiOperation(value = "updates category given in body",
-            notes = "category is recognized by id, categoryId name and attributes list can be updated")
+            notes = "category is recognized by id, categoryId name and attributeNames list can be updated")
     public ResponseEntity<?> updateCategory(@RequestBody Category category) {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
@@ -91,6 +91,7 @@ public class CategoriesController {
     }
 
     @GetMapping(value = "/trees")
+    @ApiOperation(value = "returns categories hierarchy")
     public ResponseEntity<?> getCategoryTrees() {
         List<CategoryTree> categoryTrees = StreamSupport
                 .stream(categoriesService.getRootCategories().spliterator(), false)
@@ -100,6 +101,8 @@ public class CategoriesController {
     }
 
     @GetMapping(value = "/{id}/attributes")
+    @ApiOperation(value = "returns attributeNames required for asset in category",
+            notes = "attributeNames of all super categories are also included")
     public ResponseEntity<?> getCategoryAttributes(@PathVariable String id) {
         return categoriesService.findById(id)
                 .map(category -> ResponseEntity.ok(categoriesService.getCategoryAttributes(category)))

@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.controller;
 
+import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.model.Category;
+import pl.edu.agh.assetory.model.DBEntity;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
@@ -59,61 +61,59 @@ public class AssetsController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping
-    @ApiOperation(value = "updates asset given in body",
-            notes = "asset is recognized by id, all attributes from before the operation have to be provided",
-            response = Asset.class)
-    public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
-        if (update.getId() == null) return ResponseEntity.badRequest().build();
-        return assetsService.getById(update.getId())
-                .map(asset -> {
-                    if (update.getCategoryId() != null) {
-                        if (categoriesService.findById(update.getCategoryId()).isPresent()) {
-                            asset.setCategoryId(update.getCategoryId());
-                        } else {
-                            return ResponseEntity.badRequest().build();
-                        }
-                    }
-                    if (update.getAttributesMap() != null) {
-                        if (!asset.hasAllUpdatedAttributes(update)) {
-                            asset.updateAttributes(update.getAttributesMap());
-                        } else {
-                            return ResponseEntity.badRequest().build();
-                        }
-                    }
-                    if (update.getName() != null) asset.setName(update.getName());
-                    if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
-                    if (update.getBackup() != null) asset.setBackup(update.getBackup());
-                    if (update.getLicense() != null) asset.setLicense(update.getLicense());
-                    if (update.getValue() != null) asset.setValue(update.getValue());
-                    if (update.getOwner() != null) asset.setOwner(update.getOwner());
-                    if (update.getUser() != null) asset.setUser(update.getUser());
-                    return ResponseEntity.ok(assetsService.updateAsset(asset));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
+//TODO change to new models
+//    @PutMapping
+//    @ApiOperation(value = "updates asset given in body",
+//            notes = "asset is recognized by id, all attributeNames from before the operation have to be provided",
+//            response = Asset.class)
+//    public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
+//        if (update.getId() == null) return ResponseEntity.badRequest().build();
+//        return assetsService.getById(update.getId())
+//                .map(asset -> {
+//                    if (update.getCategoryId() != null) {
+//                        if (categoriesService.findById(update.getCategoryId()).isPresent()) {
+//                            asset.setCategoryId(update.getCategoryId());
+//                        } else {
+//                            return ResponseEntity.badRequest().build();
+//                        }
+//                    }
+//                    if (update.getAttributesMap() != null) {
+//                        if (!asset.hasAllUpdatedAttributes(update)) {
+//                            asset.updateAttributes(update.getAttributesMap());
+//                        } else {
+//                            return ResponseEntity.badRequest().build();
+//                        }
+//                    }
+//                    if (update.getName() != null) asset.setName(update.getName());
+//                    if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
+//                    if (update.getBackup() != null) asset.setBackup(update.getBackup());
+//                    if (update.getLicense() != null) asset.setLicense(update.getLicense());
+//                    if (update.getValue() != null) asset.setValue(update.getValue());
+//                    if (update.getOwner() != null) asset.setOwner(update.getOwner());
+//                    if (update.getUser() != null) asset.setUser(update.getUser());
+//                    return ResponseEntity.ok(assetsService.updateAsset(asset));
+//                })
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
             notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
     public ResponseEntity<?> filterAssetsByFields(@RequestBody AssetsFilter assetsFilter) {
-        if (assetsFilter.getTreeCategory() == null) {
+        if (assetsFilter.getMainCategoryId() == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            List<String> matchingCategoryIds = new ArrayList<>(Optional.ofNullable(assetsFilter.getCategoryId())
-                    .map(ids -> ids.stream()
-                            .map(categoriesService::findById)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .map(categoriesService::getMatchingCategoryIds)
-                            .flatMap(Set::stream)
-                            .collect(Collectors.toSet())
-                    ).orElseGet(() -> {
-                        Category treeCategory = categoriesService.findById(assetsFilter.getTreeCategory()).get();
-                        return categoriesService.getMatchingCategoryIds(treeCategory);
-                    }));
-            assetsFilter.setCategoryId(matchingCategoryIds);
+            Set<String> matchingCategoryIds = assetsFilter.getCategoryIds().stream()
+                    .map(categoriesService::findById)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(DBEntity::getId)
+                    .map(categoriesService::getMatchingCategoryIds)
+                    .flatMap(Set::stream)
+                    .collect(Collectors.toSet());
+            assetsFilter.setCategoryIds(matchingCategoryIds);
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
+
     }
 }

@@ -9,11 +9,10 @@ import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.repository.AssetsRepository;
 
-import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -49,44 +48,24 @@ public class AssetsService {
 
     public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        if (assetsFilter.getCategoryId() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.CATEGORY_ID_FIELD_KEY, assetsFilter.getCategoryId()));
+        for (Map.Entry<String, List<String>> filter : assetsFilter.getFilters().entrySet()) {
+            queryBuilder = queryBuilder.must(getQueryForField(filter.getKey(), filter.getValue()));
         }
-        if (assetsFilter.getName() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.NAME_FIELD_KEY, assetsFilter.getName()));
+        if (assetsFilter.getMainCategoryId() != null) {
+            queryBuilder = queryBuilder.should(QueryBuilders.matchQuery(AssetsFilter.MAIN_CATEGORY_ID_FIELD_NAME, assetsFilter.getMainCategoryId()));
         }
-        if (assetsFilter.getAttributesMap() != null) {
-            for (Map.Entry<String, List<String>> entry : assetsFilter.getAttributesMap().entrySet()) {
-                queryBuilder = queryBuilder.must(getQueryForField(Asset.ATTRIBUTES_MAP_FIELD_KEY + "." + entry.getKey(), entry.getValue()));
-            }
+        if (assetsFilter.getCategoryIds() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_IDS_FIELD_NAME, assetsFilter.getCategoryIds()));
         }
-        if (assetsFilter.getLocalisation() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.LOCALISATION_FIELD_KEY, assetsFilter.getLocalisation()));
-        }
-        if (assetsFilter.getBackup() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.BACKUP_FIELD_KEY, assetsFilter.getBackup()));
-        }
-        if (assetsFilter.getLicense() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.LICENSE_FIELD_KEY, assetsFilter.getLicense()));
-        }
-        if (assetsFilter.getValue() != null) {
-            List<String> valueList = assetsFilter.getValue().stream().map(BigDecimal::toPlainString).collect(Collectors.toList());
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.VALUE_FIELD_KEY, valueList));
-        }
-        if (assetsFilter.getUser() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.USER_FIELD_KEY, assetsFilter.getUser()));
-        }
-        if (assetsFilter.getOwner() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(Asset.OWNER_FIELD_KEY, assetsFilter.getOwner()));
-        }
+
         return assetsRepository.search(queryBuilder);
     }
 
-    private BoolQueryBuilder getQueryForField(String fieldName, List<String> filterValues) {
-        BoolQueryBuilder query = QueryBuilders.boolQuery();
-        for (String value : filterValues) {
-            query = query.should(QueryBuilders.matchQuery(fieldName, value));
+    private BoolQueryBuilder getQueryForField(String fieldName, Collection<?> filterValues) {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+        for (Object value : filterValues) {
+            queryBuilder = queryBuilder.should(QueryBuilders.matchQuery(fieldName, value));
         }
-        return query;
+        return queryBuilder;
     }
 }

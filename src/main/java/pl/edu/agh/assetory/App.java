@@ -35,62 +35,62 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        Category all = new Category("1", "All", Lists.newArrayList("Owner"));
-        Category software = new Category("2", "Software", Lists.newArrayList("Expiration date"), all.getId());
-        all.addSubcategory(software.getId());
-        Category subSoftware = new Category("4", "SubSoftware", Lists.newArrayList("Expiration date2"), software.getId());
-        software.addSubcategory(subSoftware.getId());
-        Category hardware = new Category("3", "Hardware", Lists.newArrayList("Manufacturer"), all.getId());
-        all.addSubcategory(hardware.getId());
-        categoriesService.addCategory(all);
-        categoriesService.addCategory(hardware);
-        categoriesService.addCategory(subSoftware);
-        categoriesService.addCategory(software);
+//        Category all = new Category("1", "All", Lists.newArrayList("Owner"));
+//        Category software = new Category("2", "Software", Lists.newArrayList("Expiration date"), all.getId());
+//        all.addSubcategory(software.getId());
+//        Category subSoftware = new Category("4", "SubSoftware", Lists.newArrayList("Expiration date2"), software.getId());
+//        software.addSubcategory(subSoftware.getId());
+//        Category hardware = new Category(3, "Hardware", Lists.newArrayList("Manufacturer"), all.getId());
+//        all.addSubcategory(hardware.getId());
+//        categoriesService.addCategory(all);
+//        categoriesService.addCategory(hardware);
+//        categoriesService.addCategory(subSoftware);
+//        categoriesService.addCategory(software);
 
-        createSampleAssets().forEach(asset -> assetsService.addAsset(asset));
+//        createSampleAssets().forEach(asset -> assetsService.addAsset(asset));
     }
 
-    private List<Asset> createSampleAssets() {
-        Asset asset1 = new Asset("1",
-                "Asset number one",
-                "2",
-                ImmutableMap.<String, String>builder()
-                        .put("Owner", "PREZES")
-                        .put("Expiration date", "23.06.2019")
-                        .build(),
-                "localisation1",
-                "backup1",
-                "license1",
-                new BigDecimal(123),
-                "owner1",
-                "user1");
-        Asset asset2 = new Asset("2",
-                "Asset number two",
-                "1",
-                ImmutableMap.<String, String>builder()
-                        .put("Owner", "PREZES1")
-                        .build(),
-                "localisation2",
-                "backup2",
-                "license2",
-                new BigDecimal(13),
-                "owner2",
-                "user2");
-        Asset asset3 = new Asset("3",
-                "Asset number tree",
-                "3",
-                ImmutableMap.<String, String>builder()
-                        .put("Owner", "PREZES2")
-                        .put("Expiration date", "23.06.2019")
-                        .put("Expiration date2", "24.06.2019")
-                        .build(),
-                "localisation3",
-                "backup3",
-                "license3",
-                new BigDecimal(1),
-                "owner3",
-                "user3");
-        return Lists.newArrayList(asset1, asset2, asset3);
-    }
+//    private List<Asset> createSampleAssets() {
+//        Asset asset1 = new Asset("1",
+//                "Asset number one",
+//                "2",
+//                ImmutableMap.<String, String>builder()
+//                        .put("Owner", "PREZES")
+//                        .put("Expiration date", "23.06.2019")
+//                        .build(),
+//                "localisation1",
+//                "backup1",
+//                "license1",
+//                new BigDecimal(123),
+//                "owner1",
+//                "user1");
+//        Asset asset2 = new Asset("2",
+//                "Asset number two",
+//                "1",
+//                ImmutableMap.<String, String>builder()
+//                        .put("Owner", "PREZES1")
+//                        .build(),
+//                "localisation2",
+//                "backup2",
+//                "license2",
+//                new BigDecimal(13),
+//                "owner2",
+//                "user2");
+//        Asset asset3 = new Asset("3",
+//                "Asset number tree",
+//                "3",
+//                ImmutableMap.<String, String>builder()
+//                        .put("Owner", "PREZES2")
+//                        .put("Expiration date", "23.06.2019")
+//                        .put("Expiration date2", "24.06.2019")
+//                        .build(),
+//                "localisation3",
+//                "backup3",
+//                "license3",
+//                new BigDecimal(1),
+//                "owner3",
+//                "user3");
+//        return Lists.newArrayList(asset1, asset2, asset3);
+//    }
 
 }
