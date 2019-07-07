@@ -6,9 +6,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
+import pl.edu.agh.assetory.model.attributes.AttributeType;
+import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Document(indexName = "assetory", type = "asset")
@@ -17,15 +19,10 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class Asset extends DBEntity {
     public static final String CATEGORY_ID_FIELD_KEY = "categoryId";
-    public static final String LOCALISATION_FIELD_KEY = "localisation";
-    public static final String BACKUP_FIELD_KEY = "backup";
-    public static final String LICENSE_FIELD_KEY = "license";
-    public static final String VALUE_FIELD_KEY = "value";
-    public static final String OWNER_FIELD_KEY = "owner";
-    public static final String USER_FIELD_KEY = "user";
+    public static final String NAME_FIELD_KEY = "name";
     private String name;
     private String categoryId;
-    private List<AssetAttribute> attributes;
+    private List<AssetAttribute> attributes = Lists.newArrayList();
 
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
         super(id);
@@ -34,22 +31,29 @@ public class Asset extends DBEntity {
         this.attributes = attributes;
     }
 
-    public boolean hasAllUpdatedAttributes(Asset update) {
-        return getAttributeNames().containsAll(update.getAttributeNames());
-    }
+//    public boolean hasAllUpdatedAttributes(Asset update) {
+//        return getAttributeNames().containsAll(update.getAttributeNames());
+//    }
+//
+//    public void updateAttributes(List<AssetAttribute> attributes) {
+//        this.attributes = Lists.newArrayList(attributes);
+//    }
 
-    public void updateAttributes(List<AssetAttribute> attributes) {
-        this.attributes = Lists.newArrayList(attributes);
-    }
-
-    private List<String> getAttributeNames() {
-        return this.attributes.stream()
-                .map(AssetAttribute::getName)
-                .collect(Collectors.toList());
+    public static Builder builder() {
+        return new Builder();
     }
 
     public static class Builder {
         Asset asset;
+
+        public Builder() {
+            asset = new Asset();
+        }
+
+        public Builder from(Asset asset) {
+            this.asset = asset;
+            return this;
+        }
 
         public Builder name(String name) {
             this.asset.name = name;
@@ -61,8 +65,8 @@ public class Asset extends DBEntity {
             return this;
         }
 
-        public Builder addAttribute(AttributeType attributeType, String attributeName, String value) {
-            this.asset.attributes.add(new AssetAttribute(attributeType, attributeName, value));
+        public Builder addAttribute(AttributeType type, String name, String value) {
+            this.asset.attributes.add(new AssetAttribute(new CategoryAttribute(type, name), value));
             return this;
         }
 

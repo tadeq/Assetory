@@ -43,7 +43,8 @@ public class AssetsService {
     }
 
     public Iterable<Asset> getAllAssets() {
-        return assetsRepository.findAll();
+        Iterable<Asset> assets = assetsRepository.findAll();
+        return assets;
     }
 
     public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) {
@@ -54,8 +55,8 @@ public class AssetsService {
         if (assetsFilter.getMainCategoryId() != null) {
             queryBuilder = queryBuilder.should(QueryBuilders.matchQuery(AssetsFilter.MAIN_CATEGORY_ID_FIELD_NAME, assetsFilter.getMainCategoryId()));
         }
-        if (assetsFilter.getCategoryIds() != null) {
-            queryBuilder = queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_IDS_FIELD_NAME, assetsFilter.getCategoryIds()));
+        if (assetsFilter.getCategoryId() != null) {
+            queryBuilder = queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_ID_FIELD_NAME, assetsFilter.getCategoryId()));
         }
 
         return assetsRepository.search(queryBuilder);

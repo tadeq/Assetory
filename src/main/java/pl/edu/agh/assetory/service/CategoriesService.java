@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.model.DBEntity;
+import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
 
 import java.util.List;
@@ -66,13 +67,13 @@ public class CategoriesService {
         return new CategoryTree(category, subcategories);
     }
 
-    public List<String> getCategoryAttributes(Category category) {
+    public List<CategoryAttribute> getCategoryAttributes(Category category) {
         if (category.getParentCategoryId() != null && findById(category.getParentCategoryId()).isPresent()) {
             return Stream
-                    .concat(category.getAttributeNames().stream(), getCategoryAttributes(findById(category.getParentCategoryId()).get()).stream())
+                    .concat(category.getAdditionalAttributes().stream(), getCategoryAttributes(findById(category.getParentCategoryId()).get()).stream())
                     .collect(Collectors.toList());
         } else {
-            return category.getAttributeNames();
+            return category.getAdditionalAttributes();
         }
     }
 

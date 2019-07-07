@@ -1,15 +1,14 @@
-package pl.edu.agh.assetory.model;
+package pl.edu.agh.assetory.model.attributes;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssetAttribute {
-    private AttributeType type;
-    private String name;
+    private CategoryAttribute attribute;
     private String value;
 }
 

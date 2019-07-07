@@ -15,11 +15,11 @@ import java.util.Map;
 @JsonDeserialize(using = AssetsFilterDeserializer.class)
 public class AssetsFilter {
     public static final String MAIN_CATEGORY_ID_FIELD_NAME = "mainCategoryId";
-    public static final String CATEGORY_IDS_FIELD_NAME = "categoryIds";
+    public static final String CATEGORY_ID_FIELD_NAME = "categoryId";
     public static final String FILTERS_FIELD_NAME = "filters";
 
     private String mainCategoryId;
     @Setter
-    private Collection<String> categoryIds;
+    private Collection<String> categoryId;
     private Map<String, List<String>> filters;
 }

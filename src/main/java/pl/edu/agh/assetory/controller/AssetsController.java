@@ -1,14 +1,11 @@
 package pl.edu.agh.assetory.controller;
 
-import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
-import pl.edu.agh.assetory.model.Category;
-import pl.edu.agh.assetory.model.DBEntity;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
@@ -103,15 +100,11 @@ public class AssetsController {
         if (assetsFilter.getMainCategoryId() == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            Set<String> matchingCategoryIds = assetsFilter.getCategoryIds().stream()
-                    .map(categoriesService::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .map(DBEntity::getId)
+            Set<String> matchingCategoryIds = assetsFilter.getCategoryId().stream()
                     .map(categoriesService::getMatchingCategoryIds)
                     .flatMap(Set::stream)
                     .collect(Collectors.toSet());
-            assetsFilter.setCategoryIds(matchingCategoryIds);
+            assetsFilter.setCategoryId(matchingCategoryIds);
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
 
