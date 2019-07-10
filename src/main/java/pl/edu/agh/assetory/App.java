@@ -32,10 +32,10 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        prepareTestStructure();
+//        prepareTestStructure();
     }
 
-    private void prepareTestStructure(){
+    private void prepareTestStructure() {
         Category categoryAll = categoriesService.addCategory(Category.builder()
                 .name("all")
                 .addAttribute("user", AttributeType.text)
@@ -57,8 +57,8 @@ public class App implements CommandLineRunner {
                 .categoryId(hardware.getId())
                 .name("Computer")
                 .addAttribute(AttributeType.text, "user", "John")
-                .addAttribute(AttributeType.text,"location", "office")
-                .addAttribute(AttributeType.number,"price", "2500")
+                .addAttribute(AttributeType.text, "location", "office")
+                .addAttribute(AttributeType.number, "price", "2500")
                 .addAttribute(AttributeType.text, "manufacturer", "Lenovo")
                 .build());
         Asset windows = assetsService.addAsset(Asset.builder()

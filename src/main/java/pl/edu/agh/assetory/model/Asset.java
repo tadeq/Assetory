@@ -31,14 +31,6 @@ public class Asset extends DBEntity {
         this.attributes = attributes;
     }
 
-//    public boolean hasAllUpdatedAttributes(Asset update) {
-//        return getAttributeNames().containsAll(update.getAttributeNames());
-//    }
-//
-//    public void updateAttributes(List<AssetAttribute> attributes) {
-//        this.attributes = Lists.newArrayList(attributes);
-//    }
-
     public static Builder builder() {
         return new Builder();
     }

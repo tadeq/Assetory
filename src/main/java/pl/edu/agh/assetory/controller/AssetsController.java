@@ -9,9 +9,6 @@ import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping(value = "/assets")
 public class AssetsController {
@@ -58,40 +55,14 @@ public class AssetsController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-//TODO change to new models
-//    @PutMapping
-//    @ApiOperation(value = "updates asset given in body",
-//            notes = "asset is recognized by id, all attributeNames from before the operation have to be provided",
-//            response = Asset.class)
-//    public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
-//        if (update.getId() == null) return ResponseEntity.badRequest().build();
-//        return assetsService.getById(update.getId())
-//                .map(asset -> {
-//                    if (update.getCategoryId() != null) {
-//                        if (categoriesService.findById(update.getCategoryId()).isPresent()) {
-//                            asset.setCategoryId(update.getCategoryId());
-//                        } else {
-//                            return ResponseEntity.badRequest().build();
-//                        }
-//                    }
-//                    if (update.getAttributesMap() != null) {
-//                        if (!asset.hasAllUpdatedAttributes(update)) {
-//                            asset.updateAttributes(update.getAttributesMap());
-//                        } else {
-//                            return ResponseEntity.badRequest().build();
-//                        }
-//                    }
-//                    if (update.getName() != null) asset.setName(update.getName());
-//                    if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
-//                    if (update.getBackup() != null) asset.setBackup(update.getBackup());
-//                    if (update.getLicense() != null) asset.setLicense(update.getLicense());
-//                    if (update.getValue() != null) asset.setValue(update.getValue());
-//                    if (update.getOwner() != null) asset.setOwner(update.getOwner());
-//                    if (update.getUser() != null) asset.setUser(update.getUser());
-//                    return ResponseEntity.ok(assetsService.updateAsset(asset));
-//                })
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+    @PutMapping
+    @ApiOperation(value = "updates asset given in body",
+            notes = "asset is recognized by id, name is mandatory, other attributes will be removed if not provided",
+            response = Asset.class)
+    public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
+        if (asset.getId() == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(assetsService.updateAsset(asset));
+    }
 
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
@@ -100,11 +71,12 @@ public class AssetsController {
         if (assetsFilter.getMainCategoryId() == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            Set<String> matchingCategoryIds = assetsFilter.getCategoryId().stream()
-                    .map(categoriesService::getMatchingCategoryIds)
-                    .flatMap(Set::stream)
-                    .collect(Collectors.toSet());
-            assetsFilter.setCategoryId(matchingCategoryIds);
+            // wydaje mi się że coś takiego jest niepotrzebne, będzie walidacja czy kategoria istnieje - Maciek
+//            Set<String> matchingCategoryIds = assetsFilter.getCategoryId().stream()
+//                    .map(categoriesService::getMatchingCategoryIds)
+//                    .flatMap(Set::stream)
+//                    .collect(Collectors.toSet());
+//            assetsFilter.setCategoryId(matchingCategoryIds);
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
 
