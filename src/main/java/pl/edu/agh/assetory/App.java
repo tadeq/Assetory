@@ -32,7 +32,7 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-//        prepareTestStructure();
+        prepareTestStructure();
     }
 
     private void prepareTestStructure() {
@@ -52,7 +52,10 @@ public class App implements CommandLineRunner {
                 .name("software")
                 .addAttribute("expirationDate", AttributeType.date)
                 .build());
-        Category.builder().from(categoryAll).addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()));
+        categoriesService.updateCategory(Category.builder()
+                .from(categoryAll)
+                .addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()))
+                .build());
         Asset computer = assetsService.addAsset(Asset.builder()
                 .categoryId(hardware.getId())
                 .name("Computer")

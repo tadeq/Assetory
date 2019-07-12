@@ -17,7 +17,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig implements WebMvcConfigurer {
 
-    public static final String API_URL = "/swagger-ui.html";
+    private static final String API_URL = "/swagger-ui.html";
 
     private static final String ADDITIONAL_API_URL = "/api";
 
@@ -32,7 +32,7 @@ public class SwaggerConfig implements WebMvcConfigurer {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("pl.edu.agh.assetory"))
                 .paths(PathSelectors.any())
                 .build();
     }
