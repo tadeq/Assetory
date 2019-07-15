@@ -48,16 +48,23 @@ public class AssetsService {
 
     public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        for (Map.Entry<String, List<String>> filter : assetsFilter.getFilters().entrySet()) {
-            queryBuilder.must(getQueryForField(filter.getKey(), filter.getValue()));
-        }
-        Optional<List<String>> nameFilter = Optional.ofNullable(assetsFilter.getName());
-        Optional<List<String>> categoryIdFilter = Optional.ofNullable(assetsFilter.getCategoryId());
-        Optional<String> mainCategoryIdFilter = Optional.ofNullable(assetsFilter.getMainCategoryId());
-        nameFilter.ifPresent(name -> queryBuilder.should(QueryBuilders.matchQuery(AssetsFilter.NAME_FIELD, name)));
-        categoryIdFilter.ifPresent(categoryId -> queryBuilder.should(QueryBuilders.matchQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId)));
-        mainCategoryIdFilter.ifPresent(mainCategoryId -> queryBuilder.should(QueryBuilders.matchQuery(AssetsFilter.CATEGORY_ID_FIELD, mainCategoryId)));
 
+        BoolQueryBuilder attributesQuery = QueryBuilders.boolQuery();
+        for (Map.Entry<String, List<String>> filter : assetsFilter.getFilters().entrySet()) {
+            String attributeName = filter.getKey();
+            for (String value : filter.getValue()) {
+                BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
+                filterQuery.must(QueryBuilders.matchQuery("attributes.attribute.name", attributeName));
+                filterQuery.must(QueryBuilders.matchQuery("attributes.value", value));
+                attributesQuery.should(filterQuery);
+            }
+        }
+        if (attributesQuery.hasClauses()) queryBuilder.must(attributesQuery);
+
+        Optional.ofNullable(assetsFilter.getName())
+                .map(nameList -> queryBuilder.must(getQueryForField(AssetsFilter.NAME_FIELD, nameList)));
+        Optional.ofNullable(assetsFilter.getCategoryId())
+                .map(categoryIdList -> queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_ID_FIELD, categoryIdList)));
         return assetsRepository.search(queryBuilder);
     }
 

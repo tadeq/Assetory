@@ -67,8 +67,8 @@ public class App implements CommandLineRunner {
         Asset windows = assetsService.addAsset(Asset.builder()
                 .categoryId(software.getId())
                 .name("Windows")
-                .addAttribute(AttributeType.text, "user", "John")
                 .addAttribute(AttributeType.text, "location", "computer1")
+                .addAttribute(AttributeType.text, "user", "John2")
                 .addAttribute(AttributeType.number, "price", "100")
                 .addAttribute(AttributeType.date, "expirationDate", "7-07-2020")
                 .build());
