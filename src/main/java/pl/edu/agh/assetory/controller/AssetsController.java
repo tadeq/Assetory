@@ -9,6 +9,11 @@ import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping(value = "/assets")
 public class AssetsController {
@@ -71,12 +76,13 @@ public class AssetsController {
         if (assetsFilter.getMainCategoryId() == null) {
             return ResponseEntity.badRequest().build();
         } else {
-            // wydaje mi się że coś takiego jest niepotrzebne, będzie walidacja czy kategoria istnieje - Maciek
-//            Set<String> matchingCategoryIds = assetsFilter.getCategoryId().stream()
-//                    .map(categoriesService::getMatchingCategoryIds)
-//                    .flatMap(Set::stream)
-//                    .collect(Collectors.toSet());
-//            assetsFilter.setCategoryId(matchingCategoryIds);
+            Set<String> matchingCategoryIds = Optional.ofNullable(assetsFilter.getCategoryId())
+                    .map(ids -> ids.stream()
+                            .map(categoriesService::getMatchingCategoryIds)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet()))
+                    .orElseGet(() -> categoriesService.getMatchingCategoryIds(assetsFilter.getMainCategoryId()));
+            assetsFilter.setCategoryId(new ArrayList<>(matchingCategoryIds));
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
 
