@@ -1,19 +1,22 @@
 package pl.edu.agh.assetory.service;
 
+import com.google.common.collect.Sets;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.PrefixQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import pl.edu.agh.assetory.model.Category;
+import pl.edu.agh.assetory.model.CategoryTree;
+import pl.edu.agh.assetory.model.DBEntity;
+import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class CategoriesService {
@@ -49,30 +52,48 @@ public class CategoriesService {
 
     }
 
-    /**
-     * @param category
-     * @return Collection of all super categories of a given category and this category as well.
-     */
-    public Iterable<Category> getSuperCategories(Category category) {
-        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-        List<String> categoriesNames = Arrays.stream(category.getPath().split(Category.PATH_SEPARATOR))
-                .map(StringUtils::capitalize)
-                .collect(Collectors.toList());
-        for (String categoryName : categoriesNames) {
-            queryBuilder = queryBuilder.should(QueryBuilders.matchQuery(Category.NAME_FIELD_KEY, categoryName));
-        }
+    public Iterable<Category> getRootCategories() {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(Category.PARENT_ID_FIELD_KEY));
         return categoriesRepository.search(queryBuilder);
     }
 
-    /**
-     * @param category
-     * @return Collection of all subcategories of a given category without this category.
-     */
-    public Iterable<Category> getSubcategories(Category category) {
-        String regex = category.getPath() + Category.PATH_SEPARATOR;
-        PrefixQueryBuilder queryBuilder = QueryBuilders
-                .prefixQuery(Category.PATH_FIELD_KEY, regex);
-        return categoriesRepository.search(queryBuilder);
+    public CategoryTree createCategoryTree(Category category) {
+        List<CategoryTree> subcategories = category.getSubcategoryIds().stream()
+                .map(this::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(this::createCategoryTree)
+                .collect(Collectors.toList());
+        return new CategoryTree(category, subcategories);
     }
+
+    public List<CategoryAttribute> getCategoryAttributes(Category category) {
+        if (category.getParentCategoryId() != null && findById(category.getParentCategoryId()).isPresent()) {
+            return Stream
+                    .concat(category.getAdditionalAttributes().stream(), getCategoryAttributes(findById(category.getParentCategoryId()).get()).stream())
+                    .collect(Collectors.toList());
+        } else {
+            return category.getAdditionalAttributes();
+        }
+    }
+
+    public Set<String> getMatchingCategoryIds(String categoryId) {
+        Optional<Category> foundCategory = findById(categoryId);
+        if (foundCategory.isPresent()){
+            Category category = foundCategory.get();
+            Set<String> idsSet = Sets.newHashSet((category.getSubcategoryIds()));
+            idsSet.add(category.getId());
+            category.getSubcategoryIds().stream()
+                    .map(this::findById)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(DBEntity::getId)
+                    .map(this::getMatchingCategoryIds)
+                    .forEach(idsSet::addAll);
+            return idsSet;
+        }
+        return Sets.newHashSet();
+    }
+
 
 }

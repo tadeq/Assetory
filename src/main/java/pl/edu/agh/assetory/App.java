@@ -1,6 +1,5 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +10,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
+import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
-
-import java.math.BigDecimal;
 
 @SpringBootApplication
 @PropertySource("classpath:application.properties")
@@ -34,32 +32,47 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        //Mock asset
-        categoriesService.addCategory(new Category("1", "All", "all", Lists.newArrayList("Owner")));
-        Category software = new Category("2", "Software", "all" + Category.PATH_SEPARATOR + "software", Lists.newArrayList("Expiration date"));
-        Category subSoftware = new Category("4", "SubSoftware", "all" + Category.PATH_SEPARATOR + "software" + Category.PATH_SEPARATOR + "subsoftware", Lists.newArrayList("Expiration date2"));
-        categoriesService.addCategory(subSoftware);
-        categoriesService.addCategory(software);
-        categoriesService.addCategory(new Category("3", "Hardware", "all" + Category.PATH_SEPARATOR + "hardware", Lists.newArrayList("Manufacturer")));
-        assetsService.addAsset(createSampleAsset());
-        Iterable<Category> categoryList = categoriesService.getSuperCategories(software);
-        categoryList.forEach(category -> log.info(category.getName()));
+        prepareTestStructure();
     }
 
-    private Asset createSampleAsset() {
-        return new Asset("1",
-                "Asset number one",
-                "Software",
-                ImmutableMap.<String, String>builder()
-                        .put("Owner", "PREZES")
-                        .put("Expiration date", "23.06.2019")
-                        .build(),
-                "localisation1",
-                "backup1",
-                "license1",
-                new BigDecimal(123),
-                "owner1",
-                "user1");
+    private void prepareTestStructure() {
+        Category categoryAll = categoriesService.addCategory(Category.builder()
+                .name("all")
+                .addAttribute("user", AttributeType.text)
+                .addAttribute("location", AttributeType.text)
+                .addAttribute("price", AttributeType.number)
+                .build());
+        Category hardware = categoriesService.addCategory(Category.builder()
+                .parentCategoryId(categoryAll.getId())
+                .name("hardware")
+                .addAttribute("manufacturer", AttributeType.text)
+                .build());
+        Category software = categoriesService.addCategory(Category.builder()
+                .parentCategoryId(categoryAll.getId())
+                .name("software")
+                .addAttribute("expirationDate", AttributeType.date)
+                .build());
+        categoriesService.updateCategory(Category.builder()
+                .from(categoryAll)
+                .addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()))
+                .build());
+        Asset computer = assetsService.addAsset(Asset.builder()
+                .categoryId(hardware.getId())
+                .name("Computer")
+                .addAttribute(AttributeType.text, "user", "John")
+                .addAttribute(AttributeType.text, "location", "office")
+                .addAttribute(AttributeType.number, "price", "2500")
+                .addAttribute(AttributeType.text, "manufacturer", "Lenovo")
+                .build());
+        Asset windows = assetsService.addAsset(Asset.builder()
+                .categoryId(software.getId())
+                .name("Windows")
+                .addAttribute(AttributeType.text, "location", "computer1")
+                .addAttribute(AttributeType.text, "user", "John2")
+                .addAttribute(AttributeType.number, "price", "100")
+                .addAttribute(AttributeType.date, "expirationDate", "7-07-2020")
+                .build());
+        System.out.println(" ");
     }
 
 }

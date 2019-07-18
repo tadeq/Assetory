@@ -5,8 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
+
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "/assets")
@@ -56,34 +62,29 @@ public class AssetsController {
 
     @PutMapping
     @ApiOperation(value = "updates asset given in body",
-            notes = "asset is recognized by id, all attributes from before the operation have to be provided",
+            notes = "asset is recognized by id, name is mandatory, other attributes will be removed if not provided",
             response = Asset.class)
-    public ResponseEntity<?> updateAsset(@RequestBody Asset update) {
-        if (update.getId() == null) return ResponseEntity.badRequest().build();
-        return assetsService.getById(update.getId())
-                .map(asset -> {
-                    if (update.getCategory() != null && categoriesService.findByName(update.getCategory()).isEmpty()) {
-                        return ResponseEntity.badRequest().build();
-                    } else asset.setCategory(update.getCategory());
-                    if (update.getAttributesMap() != null && !asset.hasAllUpdatedAttributes(update)) {
-                        return ResponseEntity.badRequest().build();
-                    } else asset.updateAttributes(update.getAttributesMap());
-                    if (update.getName() != null) asset.setName(update.getName());
-                    if (update.getLocalisation() != null) asset.setLocalisation(update.getLocalisation());
-                    if (update.getBackup() != null) asset.setBackup(update.getBackup());
-                    if (update.getLicense() != null) asset.setLicense(update.getLicense());
-                    if (update.getValue() != null) asset.setValue(update.getValue());
-                    if (update.getOwner() != null) asset.setOwner(update.getOwner());
-                    if (update.getUser() != null) asset.setUser(update.getUser());
-                    return ResponseEntity.ok(assetsService.updateAsset(asset));
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> updateAsset(@RequestBody Asset asset) {
+        if (asset.getId() == null) return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(assetsService.updateAsset(asset));
     }
 
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
-            notes = "Filter all assets based on fields given in body. These fields are: id, name, category, attributesMap")
-    public ResponseEntity<?> filterAssetsByFields(@RequestBody Asset assetTemplate) {
-        return ResponseEntity.ok(assetsService.filterAssetsByFields(assetTemplate));
+            notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
+    public ResponseEntity<?> filterAssetsByFields(@RequestBody AssetsFilter assetsFilter) {
+        if (assetsFilter.getMainCategoryId() == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            Set<String> matchingCategoryIds = Optional.ofNullable(assetsFilter.getCategoryId())
+                    .map(ids -> ids.stream()
+                            .map(categoriesService::getMatchingCategoryIds)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet()))
+                    .orElseGet(() -> categoriesService.getMatchingCategoryIds(assetsFilter.getMainCategoryId()));
+            assetsFilter.setCategoryId(new ArrayList<>(matchingCategoryIds));
+            return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
+        }
+
     }
 }
