@@ -10,4 +10,6 @@ import java.util.List;
 public interface AssetsRepository extends ElasticsearchRepository<Asset, String> {
 
     List<Asset> getAssetsByName(String name);
+
+    List<Asset> getAssetsByCategoryId(String id);
 }
