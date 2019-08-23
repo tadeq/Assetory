@@ -49,17 +49,19 @@ public class AssetsService {
     public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
 
-        BoolQueryBuilder attributesQuery = QueryBuilders.boolQuery();
+        BoolQueryBuilder filtersQuery = QueryBuilders.boolQuery();
         for (Map.Entry<String, List<String>> filter : assetsFilter.getFilters().entrySet()) {
             String attributeName = filter.getKey();
+            BoolQueryBuilder fieldFilter = QueryBuilders.boolQuery();
             for (String value : filter.getValue()) {
                 BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
                 filterQuery.must(QueryBuilders.matchQuery("attributes.attribute.name", attributeName));
                 filterQuery.must(QueryBuilders.matchQuery("attributes.value", value));
-                attributesQuery.should(filterQuery);
+                fieldFilter.should(filterQuery);
             }
+            filtersQuery.must(fieldFilter);
         }
-        if (attributesQuery.hasClauses()) queryBuilder.must(attributesQuery);
+        if (filtersQuery.hasClauses()) queryBuilder.must(filtersQuery);
 
         Optional.ofNullable(assetsFilter.getName())
                 .map(nameList -> queryBuilder.must(getQueryForField(AssetsFilter.NAME_FIELD, nameList)));
