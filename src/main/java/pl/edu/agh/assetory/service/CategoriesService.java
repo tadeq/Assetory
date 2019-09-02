@@ -47,13 +47,18 @@ public class CategoriesService {
     }
 
     public void deleteCategory(Category category) {
+        updateParentCategorySubcategoryIds(category);
         String deletedCategoryParentId = category.getParentCategoryId();
         List<Category> childCategories = categoriesRepository.getCategoriesByParentCategoryId(category.getId());
-        childCategories.forEach(c -> c.setParentCategoryId(deletedCategoryParentId));
-        categoriesRepository.saveAll(childCategories);
+        if (!childCategories.isEmpty()) {
+            childCategories.forEach(c -> c.setParentCategoryId(deletedCategoryParentId));
+            categoriesRepository.saveAll(childCategories);
+        }
         List<Asset> assets = assetsRepository.getAssetsByCategoryId(category.getId());
-        assets.forEach(a -> a.setCategoryId(deletedCategoryParentId));
-        assetsRepository.saveAll(assets);
+        if (!assets.isEmpty()) {
+            assets.forEach(a -> a.setCategoryId(deletedCategoryParentId));
+            assetsRepository.saveAll(assets);
+        }
         categoriesRepository.delete(category);
     }
 
@@ -66,8 +71,8 @@ public class CategoriesService {
         assetsRepository.deleteAll(assets);
         List<Category> childCategories = categoriesRepository.getCategoriesByParentCategoryId(category.getId());
         childCategories.forEach(this::deleteCategoryWithContent);
+        removeFromParentCategorySubcategoryIds(category);
         categoriesRepository.delete(category);
-
     }
 
     public Iterable<Category> getRootCategories() {
@@ -113,5 +118,24 @@ public class CategoriesService {
         return Sets.newHashSet();
     }
 
+    private void updateParentCategorySubcategoryIds(Category category) {
+        Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
+            Optional<Category> parentCategory = findById(id);
+            parentCategory.ifPresent(parent -> {
+                parent.getSubcategoryIds().remove(category.getId());
+                parent.getSubcategoryIds().addAll(category.getSubcategoryIds());
+                categoriesRepository.save(parent);
+            });
+        });
+    }
 
+    private void removeFromParentCategorySubcategoryIds(Category category) {
+        Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
+            Optional<Category> parentCategory = findById(id);
+            parentCategory.ifPresent(parent -> {
+                parent.getSubcategoryIds().remove(category.getId());
+                categoriesRepository.save(parent);
+            });
+        });
+    }
 }
