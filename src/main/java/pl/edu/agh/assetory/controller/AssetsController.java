@@ -10,6 +10,7 @@ import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,7 +47,15 @@ public class AssetsController {
     @ApiOperation(value = "returns asset with given id",
             response = Asset.class)
     public ResponseEntity<?> getAsset(@PathVariable String id) {
-        return ResponseEntity.of(assetsService.getById(id));
+        return ResponseEntity.ok(assetsService.getById(id));
+    }
+
+    @GetMapping(value = "/ids")
+    @ApiOperation(value = "returns asset by given list of ids",
+            response = Asset.class,
+            responseContainer = "List")
+    public ResponseEntity<?> getAssets(@RequestParam List<String> ids) {
+        return ResponseEntity.ok(assetsService.getByIds(ids));
     }
 
     @DeleteMapping(value = "/{id}")

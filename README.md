@@ -17,3 +17,6 @@ By default application will run on port 5444.
 http://localhost:5444/swagger-ui.html#/
 2. Start ElasticSearch Head in Chrome and connect to port 9200.
 ![screen](/src/main/resources/ElasticsearchHead.png)
+
+## Web app
+Repository containing React application connected with this server can be found [here](https://github.com/lukkulig/Assetory-React)

@@ -26,6 +26,10 @@ public class AssetsService {
         return assetsRepository.findById(assetId);
     }
 
+    public List<Asset> getByIds(Collection<String> assetIds) {
+        return assetsRepository.getAssetsByIdIn(assetIds);
+    }
+
     public List<Asset> getByName(String name) {
         return assetsRepository.getAssetsByName(name);
     }
