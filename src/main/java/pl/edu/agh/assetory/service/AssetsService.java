@@ -1,7 +1,6 @@
 package pl.edu.agh.assetory.service;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.IdsQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,8 +27,7 @@ public class AssetsService {
     }
 
     public Iterable<Asset> getByIds(Collection<String> assetIds) {
-        IdsQueryBuilder query = QueryBuilders.idsQuery("asset").addIds(assetIds.toArray(new String[0]));
-        return assetsRepository.search(query);
+        return assetsRepository.findAllById(assetIds);
     }
 
     public List<Asset> getByName(String name) {
