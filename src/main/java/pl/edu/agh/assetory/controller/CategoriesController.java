@@ -9,6 +9,7 @@ import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -70,24 +71,14 @@ public class CategoriesController {
     @DeleteMapping(value = "/{id}")
     @ApiOperation(value = "deletes category with given id",
             notes = "assets will be moved to first super category")
-    public ResponseEntity<?> deleteCategoryWithoutAssets(@PathVariable String id) {
-        return categoriesService.findById(id)
-                .map(category -> {
-                    categoriesService.deleteCategory(id);
-                    return ResponseEntity.noContent().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> deleteCategoryWithoutContent(@PathVariable String id) {
+        return deleteCategory(id, category -> categoriesService.deleteCategory(category));
     }
 
-    @DeleteMapping(value = "/{id}/assets")
-    @ApiOperation(value = "deletes category by id with its all assets")
-    public ResponseEntity<?> deleteCategoryWithAssets(@PathVariable String id) {
-        return categoriesService.findById(id)
-                .map(category -> {
-                    categoriesService.deleteCategoryWithAssets(id);
-                    return ResponseEntity.noContent().build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    @DeleteMapping(value = "/{id}/with-content")
+    @ApiOperation(value = "deletes category by id with its all assets and subcategories ")
+    public ResponseEntity<?> deleteCategoryWithContent(@PathVariable String id) {
+        return deleteCategory(id, category -> categoriesService.deleteCategoryWithContent(category));
     }
 
     @GetMapping(value = "/trees")
@@ -101,11 +92,20 @@ public class CategoriesController {
     }
 
     @GetMapping(value = "/{id}/attributes")
-    @ApiOperation(value = "returns attributeNames required for asset in category",
+    @ApiOperation(value = "returns attribute names required for asset in category",
             notes = "attributeNames of all super categories are also included")
     public ResponseEntity<?> getCategoryAttributes(@PathVariable String id) {
         return categoriesService.findById(id)
                 .map(category -> ResponseEntity.ok(categoriesService.getCategoryAttributes(category)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private ResponseEntity<?> deleteCategory(String id, Consumer<Category> deleteFunction) {
+        return categoriesService.findById(id)
+                .map(category -> {
+                    deleteFunction.accept(category);
+                    return ResponseEntity.noContent().build();
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 }

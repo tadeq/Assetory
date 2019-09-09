@@ -13,4 +13,6 @@ public interface AssetsRepository extends ElasticsearchRepository<Asset, String>
     List<Asset> getAssetsByName(String name);
 
     List<Asset> getAssetsByIdIn(Collection<String> ids);
+
+    List<Asset> getAssetsByCategoryId(String id);
 }
