@@ -93,7 +93,7 @@ public class CategoriesService {
     public List<CategoryAttribute> getCategoryAttributes(Category category) {
         if (category.getParentCategoryId() != null && findById(category.getParentCategoryId()).isPresent()) {
             return Stream
-                    .concat(category.getAdditionalAttributes().stream(), getCategoryAttributes(findById(category.getParentCategoryId()).get()).stream())
+                    .concat(getCategoryAttributes(findById(category.getParentCategoryId()).get()).stream(), category.getAdditionalAttributes().stream())
                     .collect(Collectors.toList());
         } else {
             return category.getAdditionalAttributes();
