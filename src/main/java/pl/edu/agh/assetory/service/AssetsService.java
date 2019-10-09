@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -77,7 +78,7 @@ public class AssetsService {
     private BoolQueryBuilder getQueryForField(String fieldName, Collection<?> filterValues) {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
         for (Object value : filterValues) {
-            queryBuilder.should(QueryBuilders.matchQuery(fieldName, value));
+            queryBuilder.should(QueryBuilders.matchQuery(fieldName, value).operator(Operator.AND));
         }
         return queryBuilder;
     }

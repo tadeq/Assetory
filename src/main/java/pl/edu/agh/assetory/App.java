@@ -32,7 +32,7 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        prepareTestStructure();
+//        prepareTestStructure();
     }
 
     private void prepareTestStructure() {
@@ -48,10 +48,15 @@ public class App implements CommandLineRunner {
                 .name("Hardware")
                 .addAttribute("Manufacturer", AttributeType.text)
                 .build());
+        Category subhardware1 = categoriesService.addCategory(Category.builder()
+                .parentCategoryId(hardware.getId())
+                .name("Sub-Hardware-1")
+                .addAttribute("Sub-Hardware-Attribute", AttributeType.text)
+                .build());
         Category software = categoriesService.addCategory(Category.builder()
                 .parentCategoryId(categoryAll.getId())
                 .name("Software")
-                .addAttribute("ExpirationDate", AttributeType.date)
+                .addAttribute("Expiration Date", AttributeType.date)
                 .build());
         Category subsoftware1 = categoriesService.addCategory(Category.builder()
                 .parentCategoryId(software.getId())
@@ -68,6 +73,10 @@ public class App implements CommandLineRunner {
         categoriesService.updateCategory(Category.builder()
                 .from(software)
                 .addSubcategoryIds(Lists.newArrayList(subsoftware1.getId(), subsoftware2.getId()))
+                .build());
+        categoriesService.updateCategory(Category.builder()
+                .from(hardware)
+                .addSubcategoryIds(Lists.newArrayList(subhardware1.getId()))
                 .build());
         Asset computer = assetsService.addAsset(Asset.builder()
                 .categoryId(hardware.getId())
@@ -88,27 +97,37 @@ public class App implements CommandLineRunner {
         Asset windows = assetsService.addAsset(Asset.builder()
                 .categoryId(software.getId())
                 .name("Windows")
-                .addAttribute(AttributeType.text, "Location", "Computer1")
                 .addAttribute(AttributeType.text, "User", "John2")
+                .addAttribute(AttributeType.text, "Location", "Computer1")
                 .addAttribute(AttributeType.number, "Price", "100")
-                .addAttribute(AttributeType.date, "ExpirationDate", "7-07-2020")
+                .addAttribute(AttributeType.date, "Expiration Date", "7-07-2020")
                 .build());
         Asset subwindows1 = assetsService.addAsset(Asset.builder()
                 .categoryId(subsoftware1.getId())
                 .name("Windows")
-                .addAttribute(AttributeType.text, "Location", "Computer2")
                 .addAttribute(AttributeType.text, "User", "John")
+                .addAttribute(AttributeType.text, "Location", "Computer2")
                 .addAttribute(AttributeType.number, "Price", "2500")
-                .addAttribute(AttributeType.date, "ExpirationDate", "14-07-2020")
+                .addAttribute(AttributeType.date, "Expiration Date", "14-07-2020")
                 .build());
         Asset subwindows2 = assetsService.addAsset(Asset.builder()
                 .categoryId(subsoftware2.getId())
                 .name("Windows")
-                .addAttribute(AttributeType.text, "Location", "Computer1")
                 .addAttribute(AttributeType.text, "User", "Johnatan")
+                .addAttribute(AttributeType.text, "Location", "Computer1")
                 .addAttribute(AttributeType.number, "Price", "1700")
-                .addAttribute(AttributeType.date, "ExpirationDate", "14-07-2020")
+                .addAttribute(AttributeType.date, "Expiration Date", "14-07-2020")
                 .build());
+        for(int i=0;i<100;i++) {
+            assetsService.addAsset(Asset.builder()
+                    .categoryId(i%2==0 ? hardware.getId() : subhardware1.getId())
+                    .name("Computer "+i)
+                    .addAttribute(AttributeType.text, "User", "John "+i%3)
+                    .addAttribute(AttributeType.text, "Location", "Office "+i%5)
+                    .addAttribute(AttributeType.number, "Price", String.valueOf(i*200))
+                    .addAttribute(AttributeType.text, "Manufacturer", "lenovo "+i%3)
+                    .build());
+        }
         System.out.println(" ");
 
     }
