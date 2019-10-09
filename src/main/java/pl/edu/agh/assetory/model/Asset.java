@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.model;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,9 @@ import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @Document(indexName = "assetory", type = "asset")
@@ -23,12 +26,18 @@ public class Asset extends DBEntity {
     private String name;
     private String categoryId;
     private List<AssetAttribute> attributes = Lists.newArrayList();
+    private Set<String> relatedAssetsIds = Sets.newHashSet();
 
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
         super(id);
         this.name = name;
         this.categoryId = categoryId;
         this.attributes = attributes;
+    }
+
+    public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes, Set<String> relatedAssetsIds) {
+        this(id, name, categoryId, attributes);
+        this.relatedAssetsIds = relatedAssetsIds;
     }
 
     public static Builder builder() {
@@ -62,8 +71,18 @@ public class Asset extends DBEntity {
             return this;
         }
 
-        public Builder addAttributes(List<AssetAttribute> attributes) {
+        public Builder addAttributes(Collection<AssetAttribute> attributes) {
             this.asset.attributes.addAll(attributes);
+            return this;
+        }
+
+        public Builder addRelatedAsset(String assetId) {
+            this.asset.relatedAssetsIds.add(assetId);
+            return this;
+        }
+
+        public Builder addRelatedAssets(Collection<String> assetIds) {
+            this.asset.relatedAssetsIds.addAll(assetIds);
             return this;
         }
 

@@ -27,6 +27,10 @@ public class AssetsService {
         return assetsRepository.findById(assetId);
     }
 
+    public Iterable<Asset> getByIds(Collection<String> assetIds) {
+        return assetsRepository.findAllById(assetIds);
+    }
+
     public List<Asset> getByName(String name) {
         return assetsRepository.getAssetsByName(name);
     }
