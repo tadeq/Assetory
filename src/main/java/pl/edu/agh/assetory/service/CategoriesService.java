@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -15,6 +16,7 @@ import pl.edu.agh.assetory.repository.AssetsRepository;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -116,6 +118,26 @@ public class CategoriesService {
             return idsSet;
         }
         return Sets.newHashSet();
+    }
+
+    public Map<String, Set<String>> getCategoryAttributesValues(Category category) {
+        List<Asset> assets = getAssetsInCategory(category.getId());
+        List<String> attributeNames = getCategoryAttributes(category).stream()
+                .map(attribute -> attribute.getName())
+                .collect(Collectors.toList());
+        Map<String, Set<String>> attributesValues = Maps.newHashMap();
+        attributeNames.forEach(attribute -> attributesValues.put(attribute, assets.stream()
+                .map(asset -> asset.getAttributes().stream()
+                        .filter(attr -> attr.getAttribute().getName().equals(attribute))
+                        .findFirst())
+                .filter(assetAttribute -> assetAttribute.isPresent())
+                .map(assetAttribute -> assetAttribute.get().getValue())
+                .collect(Collectors.toSet())));
+        return attributesValues;
+    }
+
+    private List<Asset> getAssetsInCategory(String categoryId) {
+        return assetsRepository.getAssetsByCategoryId(categoryId);
     }
 
     private void updateParentCategorySubcategoryIds(Category category) {
