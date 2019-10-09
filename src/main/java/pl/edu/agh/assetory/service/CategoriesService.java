@@ -14,6 +14,7 @@ import pl.edu.agh.assetory.model.DBEntity;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 import pl.edu.agh.assetory.repository.AssetsRepository;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
+import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
 
 import java.util.List;
 import java.util.Map;
@@ -120,19 +121,21 @@ public class CategoriesService {
         return Sets.newHashSet();
     }
 
-    public Map<String, Set<String>> getCategoryAttributesValues(Category category) {
+    public Map<String, List<String>> getCategoryAttributesValues(Category category) {
         List<Asset> assets = getAssetsInCategory(category.getId());
         List<String> attributeNames = getCategoryAttributes(category).stream()
-                .map(attribute -> attribute.getName())
+                .map(CategoryAttribute::getName)
                 .collect(Collectors.toList());
-        Map<String, Set<String>> attributesValues = Maps.newHashMap();
+        Map<String, List<String>> attributesValues = Maps.newHashMap();
         attributeNames.forEach(attribute -> attributesValues.put(attribute, assets.stream()
                 .map(asset -> asset.getAttributes().stream()
                         .filter(attr -> attr.getAttribute().getName().equals(attribute))
                         .findFirst())
-                .filter(assetAttribute -> assetAttribute.isPresent())
+                .filter(Optional::isPresent)
                 .map(assetAttribute -> assetAttribute.get().getValue())
-                .collect(Collectors.toSet())));
+                .distinct()
+                .collect(Collectors.toList())));
+        attributesValues.forEach((name, values) -> values.sort(NumberAwareStringComparator.INSTANCE));
         return attributesValues;
     }
 
