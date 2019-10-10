@@ -58,6 +58,13 @@ public class AssetsController {
         return ResponseEntity.ok(assetsService.getByIds(ids));
     }
 
+    @PostMapping(value = "/name")
+    @ApiOperation(value = "returns asset with given name",
+            response = Asset.class)
+    public ResponseEntity<?> getAssetByName(@RequestBody String name) {
+        return ResponseEntity.ok(assetsService.getByName(name));
+    }
+
     @DeleteMapping(value = "/{id}")
     @ApiOperation(value = "deletes asset with given id")
     public ResponseEntity<?> deleteAsset(@PathVariable String id) {
