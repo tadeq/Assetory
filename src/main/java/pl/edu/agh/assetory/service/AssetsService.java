@@ -31,8 +31,16 @@ public class AssetsService {
         return assetsRepository.findAllById(assetIds);
     }
 
+    public Optional<Asset> getByCategoryIdAndName(String categoryId, String name) {
+        return Optional.ofNullable(assetsRepository.getAssetByCategoryIdAndName(name, categoryId));
+    }
+
     public List<Asset> getByName(String name) {
         return assetsRepository.getAssetsByName(name);
+    }
+
+    public List<Asset> getByCategoryId(String categoryId) {
+        return assetsRepository.getAssetsByCategoryId(categoryId);
     }
 
     public Asset addAsset(Asset asset) {

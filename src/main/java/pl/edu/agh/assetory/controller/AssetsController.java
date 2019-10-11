@@ -58,11 +58,29 @@ public class AssetsController {
         return ResponseEntity.ok(assetsService.getByIds(ids));
     }
 
-    @PostMapping(value = "/name")
-    @ApiOperation(value = "returns asset with given name",
+    @GetMapping(value = "/{categoryId}/{name}")
+    @ApiOperation(value = "returns asset with given name within given category",
             response = Asset.class)
-    public ResponseEntity<?> getAssetByName(@RequestBody String name) {
+    public ResponseEntity<?> getAssetByCategoryAndName(@PathVariable String categoryId, @PathVariable String name) {
+        return assetsService.getByCategoryIdAndName(categoryId, name)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(value = "/name/{name}")
+    @ApiOperation(value = "returns assets with given name",
+            response = Asset.class,
+            responseContainer = "List")
+    public ResponseEntity<?> getAssetsByName(@PathVariable String name) {
         return ResponseEntity.ok(assetsService.getByName(name));
+    }
+
+    @GetMapping(value = "/category/{categoryId}")
+    @ApiOperation(value = "returns all assets within given category",
+            response = Asset.class,
+            responseContainer = "List")
+    public ResponseEntity<?> getAssetsByCategory(@PathVariable String categoryId) {
+        return ResponseEntity.ok(assetsService.getByCategoryId(categoryId));
     }
 
     @DeleteMapping(value = "/{id}")
