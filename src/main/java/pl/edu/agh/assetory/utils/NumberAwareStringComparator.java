@@ -18,17 +18,12 @@ public class NumberAwareStringComparator implements Comparator<CharSequence> {
         Matcher m1 = PATTERN.matcher(s1);
         Matcher m2 = PATTERN.matcher(s2);
 
-        // The only way find() could fail is at the end of a string
         while (m1.find() && m2.find()) {
-            // matcher.group(1) fetches any non-digits captured by the
-            // first parentheses in PATTERN.
             int nonDigitCompare = m1.group(1).compareTo(m2.group(1));
             if (0 != nonDigitCompare) {
                 return nonDigitCompare;
             }
 
-            // matcher.group(2) fetches any digits captured by the
-            // second parentheses in PATTERN.
             if (m1.group(2).isEmpty()) {
                 return m2.group(2).isEmpty() ? 0 : -1;
             } else if (m2.group(2).isEmpty()) {
@@ -43,8 +38,6 @@ public class NumberAwareStringComparator implements Comparator<CharSequence> {
             }
         }
 
-        // Handle if one string is a prefix of the other.
-        // Nothing comes before something.
         return m1.hitEnd() && m2.hitEnd() ? 0 :
                 m1.hitEnd() ? -1 : +1;
     }
