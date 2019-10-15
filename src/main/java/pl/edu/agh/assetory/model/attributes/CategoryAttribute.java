@@ -10,4 +10,11 @@ import lombok.NoArgsConstructor;
 public class CategoryAttribute {
     private AttributeType type;
     private String name;
+    private boolean required;
+
+    public CategoryAttribute (AttributeType type, String name) {
+        this.type = type;
+        this.name = name;
+        this.required = false;
+    }
 }
