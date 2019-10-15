@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
@@ -23,7 +25,9 @@ import java.util.Set;
 public class Asset extends DBEntity {
     public static final String CATEGORY_ID_FIELD_KEY = "categoryId";
     public static final String NAME_FIELD_KEY = "name";
+    @Field(type = FieldType.Keyword)
     private String name;
+    @Field(type = FieldType.Keyword)
     private String categoryId;
     private List<AssetAttribute> attributes = Lists.newArrayList();
     private Set<String> relatedAssetsIds = Sets.newHashSet();
