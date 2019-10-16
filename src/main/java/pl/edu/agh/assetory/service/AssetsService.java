@@ -31,8 +31,12 @@ public class AssetsService {
         return assetsRepository.findAllById(assetIds);
     }
 
-    public Optional<Asset> getByCategoryIdAndName(String categoryId, String name) {
-        return Optional.ofNullable(assetsRepository.getAssetByCategoryIdAndName(name, categoryId));
+    public Iterable<Asset> getByCategoryIdAndName(String categoryId, String name) {
+//        return Optional.ofNullable(assetsRepository.getAssetByCategoryIdAndName(name, categoryId));
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId))
+                .must(QueryBuilders.termQuery(AssetsFilter.NAME_FIELD, name));
+        return assetsRepository.search(queryBuilder);
     }
 
     public List<Asset> getByName(String name) {
