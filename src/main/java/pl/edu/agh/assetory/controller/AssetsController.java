@@ -62,10 +62,9 @@ public class AssetsController {
     @ApiOperation(value = "returns asset with given name within given category",
             response = Asset.class)
     public ResponseEntity<?> getAssetByCategoryAndName(@PathVariable String categoryId, @PathVariable String name) {
-        Iterable<Asset> a = assetsService.getByCategoryIdAndName(categoryId, name);
-        return ResponseEntity.ok(a);
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
+        return assetsService.getByCategoryIdAndName(categoryId, name)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "/name/{name}")
