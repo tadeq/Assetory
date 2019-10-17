@@ -118,14 +118,14 @@ public class App implements CommandLineRunner {
                 .addAttribute(AttributeType.number, "Price", "1700")
                 .addAttribute(AttributeType.date, "Expiration Date", "14-07-2020")
                 .build());
-        for(int i=0;i<100;i++) {
+        for (int i = 0; i < 100; i++) {
             assetsService.addAsset(Asset.builder()
-                    .categoryId(i%2==0 ? hardware.getId() : subhardware1.getId())
-                    .name("Computer "+i)
-                    .addAttribute(AttributeType.text, "User", "John "+i%3)
-                    .addAttribute(AttributeType.text, "Location", "Office "+i%5)
-                    .addAttribute(AttributeType.number, "Price", String.valueOf(i*200))
-                    .addAttribute(AttributeType.text, "Manufacturer", "lenovo "+i%3)
+                    .categoryId(i % 2 == 0 ? hardware.getId() : subhardware1.getId())
+                    .name("Computer " + i)
+                    .addAttribute(AttributeType.text, "User", "John " + i % 3)
+                    .addAttribute(AttributeType.text, "Location", "Office " + i % 5)
+                    .addAttribute(AttributeType.number, "Price", String.valueOf(i * 200))
+                    .addAttribute(AttributeType.text, "Manufacturer", "lenovo " + i % 3)
                     .build());
         }
         System.out.println(" ");
