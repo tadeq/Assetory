@@ -100,6 +100,15 @@ public class CategoriesController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping(value = "/{id}/attributes/values")
+    @ApiOperation(value = "returns attribute values already used in category",
+            notes = "includes all attributes in category")
+    public ResponseEntity<?> getCategoryAttributesValues(@PathVariable String id, @RequestParam(required = false, defaultValue = "false") boolean withSubcategories) {
+        return categoriesService.findById(id)
+                .map(category -> ResponseEntity.ok(categoriesService.getCategoryAttributesValues(category, withSubcategories)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     private ResponseEntity<?> deleteCategory(String id, Consumer<Category> deleteFunction) {
         return categoriesService.findById(id)
                 .map(category -> {

@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.service;
 
+import com.google.common.collect.Lists;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -31,8 +32,19 @@ public class AssetsService {
         return assetsRepository.findAllById(assetIds);
     }
 
+    public Optional<Asset> getByCategoryIdAndName(String categoryId, String name) {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId))
+                .must(QueryBuilders.termQuery(AssetsFilter.NAME_FIELD, name));
+        return Lists.newArrayList(assetsRepository.search(queryBuilder)).stream().findFirst();
+    }
+
     public List<Asset> getByName(String name) {
         return assetsRepository.getAssetsByName(name);
+    }
+
+    public List<Asset> getByCategoryId(String categoryId) {
+        return assetsRepository.getAssetsByCategoryId(categoryId);
     }
 
     public Asset addAsset(Asset asset) {

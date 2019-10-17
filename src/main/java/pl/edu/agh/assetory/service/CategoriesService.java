@@ -1,7 +1,9 @@
 package pl.edu.agh.assetory.service;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,12 +15,16 @@ import pl.edu.agh.assetory.model.DBEntity;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 import pl.edu.agh.assetory.repository.AssetsRepository;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
+import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
 
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class CategoriesService {
@@ -116,6 +122,40 @@ public class CategoriesService {
             return idsSet;
         }
         return Sets.newHashSet();
+    }
+
+    public Map<String, List<String>> getCategoryAttributesValues(Category category, boolean withSubcategories) {
+        List<Asset> assets = getAssetsInCategory(category.getId(), withSubcategories);
+        List<String> attributeNames = getCategoryAttributes(category).stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toCollection(LinkedList::new));
+        Map<String, List<String>> attributesValues = Maps.newLinkedHashMap();
+        attributesValues.put(Asset.NAME_FIELD_KEY, assets.stream()
+                .map(Asset::getName)
+                .distinct()
+                .collect(Collectors.toList()));
+        attributeNames.forEach(attribute -> attributesValues.put(attribute, assets.stream()
+                .map(asset -> asset.getAttributes().stream()
+                        .filter(attr -> attr.getAttribute().getName().equals(attribute))
+                        .findFirst())
+                .filter(Optional::isPresent)
+                .map(assetAttribute -> assetAttribute.get().getValue())
+                .distinct()
+                .collect(Collectors.toList())));
+        attributesValues.forEach((name, values) -> values.sort(NumberAwareStringComparator.INSTANCE));
+        return attributesValues;
+    }
+
+    private List<Asset> getAssetsInCategory(String categoryId, boolean withSubcategories) {
+        if (withSubcategories) {
+            Set<String> matchingCategoriesId = getMatchingCategoryIds(categoryId);
+            BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+            for (Object value : matchingCategoriesId) {
+                queryBuilder.should(QueryBuilders.matchQuery(Asset.CATEGORY_ID_FIELD_KEY, value).operator(Operator.AND));
+            }
+            return StreamSupport.stream(assetsRepository.search(queryBuilder).spliterator(), false).collect(Collectors.toList());
+        }
+        return assetsRepository.getAssetsByCategoryId(categoryId);
     }
 
     private void updateParentCategorySubcategoryIds(Category category) {
