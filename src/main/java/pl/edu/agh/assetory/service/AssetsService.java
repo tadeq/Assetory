@@ -72,8 +72,8 @@ public class AssetsService {
             BoolQueryBuilder fieldFilter = QueryBuilders.boolQuery();
             for (String value : filter.getValue()) {
                 BoolQueryBuilder filterQuery = QueryBuilders.boolQuery();
-                filterQuery.must(QueryBuilders.matchQuery("attributes.attribute.name", attributeName));
-                filterQuery.must(QueryBuilders.matchQuery("attributes.value", value));
+                filterQuery.must(QueryBuilders.termQuery("attributes.attribute.name.keyword", attributeName));
+                filterQuery.must(QueryBuilders.termQuery("attributes.value.keyword", value));
                 fieldFilter.should(filterQuery);
             }
             filtersQuery.must(fieldFilter);
