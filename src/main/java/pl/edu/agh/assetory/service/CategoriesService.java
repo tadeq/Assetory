@@ -12,7 +12,9 @@ import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.model.DBEntity;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
+import pl.edu.agh.assetory.model.update.CategoryUpdate;
 import pl.edu.agh.assetory.repository.AssetsRepository;
 import pl.edu.agh.assetory.repository.CategoriesRepository;
 import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
@@ -48,6 +50,27 @@ public class CategoriesService {
         return categoriesRepository.save(newCategory);
     }
 
+    public Category updateCategory(CategoryUpdate categoryUpdate) {
+        Category category = categoryUpdate.getCategory();
+        Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        List<Asset> assets = getAssetsInCategory(category.getId(), true);
+        assets.forEach(asset -> attributeChanges.forEach((oldName, newName) -> {
+            Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
+                    .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
+                    .findFirst();
+            Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
+                    .filter(attribute -> attribute.getName().equals(newName))
+                    .findFirst();
+            oldAttribute.ifPresent(oldAttr -> {
+                asset.getAttributes().remove(oldAttr);
+                newAttribute.ifPresent(newAttr -> asset.getAttributes().add(new AssetAttribute(newAttr, oldAttr.getValue())));
+            });
+        }));
+        assetsRepository.saveAll(assets);
+        return categoriesRepository.save(categoryUpdate.getCategory());
+    }
+
+    @Deprecated
     public Category updateCategory(Category category) {
         return categoriesRepository.save(category);
     }

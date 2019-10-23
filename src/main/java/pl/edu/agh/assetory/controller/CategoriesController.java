@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
+import pl.edu.agh.assetory.model.update.CategoryUpdate;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.util.List;
@@ -56,8 +57,9 @@ public class CategoriesController {
 
     @PutMapping
     @ApiOperation(value = "updates category given in body",
-            notes = "category is recognized by id, categoryId name and attributeNames list can be updated")
-    public ResponseEntity<?> updateCategory(@RequestBody Category category) {
+            notes = "category is recognized by id, categoryId name and attributeNames list can be updated; " +
+                    "changed attributes have to be provided in attributeChanges map")
+    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
 
