@@ -40,7 +40,7 @@ public class CategoriesController {
                 .map(category -> {
                     subcategory.setParentCategoryId(category.getId());
                     Category savedSubcategory = categoriesService.addCategory(subcategory);
-                    category.addSubcategory(savedSubcategory.getId());
+                    category.addSubcategoryId(savedSubcategory.getId());
                     categoriesService.addCategory(category);
                     return ResponseEntity.ok(savedSubcategory);
                 })

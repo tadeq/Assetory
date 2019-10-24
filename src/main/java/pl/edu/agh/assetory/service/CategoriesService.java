@@ -62,8 +62,8 @@ public class CategoriesService {
                     .filter(attribute -> attribute.getName().equals(newName))
                     .findFirst();
             oldAttribute.ifPresent(oldAttr -> {
-                asset.getAttributes().remove(oldAttr);
-                newAttribute.ifPresent(newAttr -> asset.getAttributes().add(new AssetAttribute(newAttr, oldAttr.getValue())));
+                asset.removeAttribute(oldAttr);
+                newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
             });
         }));
         assetsRepository.saveAll(assets);
@@ -185,8 +185,8 @@ public class CategoriesService {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
-                parent.getSubcategoryIds().addAll(category.getSubcategoryIds());
+                parent.removeSubcategoryId(category.getId());
+                parent.addSubcategoryIds(category.getSubcategoryIds());
                 categoriesRepository.save(parent);
             });
         });
@@ -196,7 +196,7 @@ public class CategoriesService {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
+                parent.removeSubcategoryId(category.getId());
                 categoriesRepository.save(parent);
             });
         });

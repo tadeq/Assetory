@@ -53,8 +53,16 @@ public class Category extends DBEntity {
         this.additionalAttributes.add(attribute);
     }
 
-    public void addSubcategory(String subcategoryId) {
+    public void addSubcategoryId(String subcategoryId) {
         this.subcategoryIds.add(subcategoryId);
+    }
+
+    public void addSubcategoryIds(Collection<String> categoryIds) {
+        this.subcategoryIds.addAll(categoryIds);
+    }
+
+    public void removeSubcategoryId(String subcategoryId) {
+        this.subcategoryIds.remove(subcategoryId);
     }
 
     public static Builder builder() {
