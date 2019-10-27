@@ -101,7 +101,7 @@ public class CategoriesService {
     public List<Category> findByName(String categoryName) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(Category.NAME_FIELD_KEY, categoryName));
-        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder));
+        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
@@ -138,7 +138,7 @@ public class CategoriesService {
     public Iterable<Category> getAllCategories() throws IOException {
         SearchRequest searchRequest = new SearchRequest("category");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery()).size(10000);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -162,7 +162,7 @@ public class CategoriesService {
         SearchRequest searchRequest = new SearchRequest("category");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(Category.PARENT_ID_FIELD_KEY));
-        searchSourceBuilder.query(queryBuilder);
+        searchSourceBuilder.query(queryBuilder).size(10000);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -239,7 +239,7 @@ public class CategoriesService {
             }
             SearchRequest searchRequest = new SearchRequest("category");
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(queryBuilder);
+            searchSourceBuilder.query(queryBuilder).size(10000);
             searchRequest.source(searchSourceBuilder);
             return assetsService.getSearchResult(client.search(searchRequest, RequestOptions.DEFAULT));
         }
@@ -278,7 +278,7 @@ public class CategoriesService {
     private List<Category> getCategoriesByParentCategoryId(String parentCategoryId) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(Category.PARENT_ID_FIELD_KEY, parentCategoryId));
-        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder));
+        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);

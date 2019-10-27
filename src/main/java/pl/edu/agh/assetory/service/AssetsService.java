@@ -89,7 +89,7 @@ public class AssetsService {
     public List<Asset> getAllAssets() throws IOException {
         SearchRequest searchRequest = new SearchRequest("asset");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery()).size(10000);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -112,7 +112,7 @@ public class AssetsService {
     public Iterable<Asset> getByIds(Collection<String> assetIds) throws IOException {
         SearchRequest searchRequest = new SearchRequest("asset");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.idsQuery().addIds(assetIds.toArray(new String[assetIds.size()])));
+        searchSourceBuilder.query(QueryBuilders.idsQuery().addIds(assetIds.toArray(new String[assetIds.size()]))).size(10000);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -124,7 +124,7 @@ public class AssetsService {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId))
                 .must(QueryBuilders.termQuery(AssetsFilter.NAME_FIELD, name));
-        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder));
+        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse).stream().findFirst();
@@ -133,7 +133,7 @@ public class AssetsService {
     public List<Asset> getByName(String name) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(AssetsFilter.NAME_FIELD, name));
-        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder));
+        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
@@ -142,7 +142,7 @@ public class AssetsService {
     public List<Asset> getByCategoryId(String categoryId) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
                 .must(QueryBuilders.termQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId));
-        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder));
+        SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
