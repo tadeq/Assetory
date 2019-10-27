@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
@@ -14,9 +15,11 @@ import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
+
+import java.io.IOException;
 import java.util.Random;
 
-@SpringBootApplication
+@SpringBootApplication()
 @PropertySource("classpath:application.properties")
 public class App implements CommandLineRunner {
 
@@ -34,7 +37,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-//         prepareTestStructure();
+//        try {
+//            assetsService.putMappings();
+//            categoriesService.putMappings();
+//            prepareTestStructure();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            System.out.println("Cos duplo z IOException z elastica");
+//        }
     }
 
 
@@ -43,7 +53,7 @@ public class App implements CommandLineRunner {
         return array[rnd];
     }
 
-    private void prepareTestStructure() {
+    private void prepareTestStructure() throws IOException {
         String[] users = {"John", "Xavier", "Carlos", "Juan", "Joe", "Tony", "Albert", "Cleo", "Phil"};
         Category all = categoriesService.addCategory(Category.builder()
                 .name("All")

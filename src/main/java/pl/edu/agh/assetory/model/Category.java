@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
@@ -13,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-@Document(indexName = "assetory", type = "category")
+//@Document(indexName = "assetory", type = "category")
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
@@ -35,12 +34,12 @@ public class Category extends DBEntity {
         this.subcategoryIds = subcategoryIds;
     }
 
-    public void addSubcategory(String subcategoryId) {
-        this.subcategoryIds.add(subcategoryId);
-    }
-
     public static Builder builder() {
         return new Builder();
+    }
+
+    public void addSubcategory(String subcategoryId) {
+        this.subcategoryIds.add(subcategoryId);
     }
 
     public static class Builder {

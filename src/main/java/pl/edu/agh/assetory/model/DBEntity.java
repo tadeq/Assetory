@@ -1,7 +1,8 @@
 package pl.edu.agh.assetory.model;
 
-import lombok.*;
-import org.springframework.data.annotation.Id;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -9,7 +10,6 @@ import org.springframework.data.annotation.Id;
 public abstract class DBEntity {
     public static final String NAME_FIELD_KEY = "name";
     public static final String ID_FIELD_KEY = "id";
-    @Id
-    @Setter(AccessLevel.NONE)
+    //    @Setter(AccessLevel.NONE)
     private String id;
 }
