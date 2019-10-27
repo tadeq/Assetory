@@ -1,9 +1,8 @@
 package pl.edu.agh.assetory.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
@@ -15,16 +14,23 @@ import java.util.List;
 @Component
 @Document(indexName = "assetory", type = "category")
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
 @NoArgsConstructor
 public class Category extends DBEntity {
     public static final String ATTRIBUTES_FIELD_KEY = "attributeNames";
     public static final String PARENT_ID_FIELD_KEY = "parentCategoryId";
     public static final String SUBCATEGORIES_IDS_FIELD_KEY = "subcategoryIds";
     public static final String NAME_FIELD_KEY = "name";
+
     private String name;
+
+    @Getter(AccessLevel.NONE)
     private List<CategoryAttribute> additionalAttributes = Lists.newArrayList();
+
+    @Setter
     private String parentCategoryId;
+
+    @Getter(AccessLevel.NONE)
     private List<String> subcategoryIds = Lists.newArrayList();
 
     public Category(String id, String name, List<CategoryAttribute> additionalAttributes, String parentCategoryId, List<String> subcategoryIds) {
@@ -35,8 +41,28 @@ public class Category extends DBEntity {
         this.subcategoryIds = subcategoryIds;
     }
 
-    public void addSubcategory(String subcategoryId) {
+    public List<CategoryAttribute> getAdditionalAttributes() {
+        return ImmutableList.copyOf(additionalAttributes);
+    }
+
+    public List<String> getSubcategoryIds() {
+        return ImmutableList.copyOf(subcategoryIds);
+    }
+
+    public void addAttribute(CategoryAttribute attribute) {
+        this.additionalAttributes.add(attribute);
+    }
+
+    public void addSubcategoryId(String subcategoryId) {
         this.subcategoryIds.add(subcategoryId);
+    }
+
+    public void addSubcategoryIds(Collection<String> categoryIds) {
+        this.subcategoryIds.addAll(categoryIds);
+    }
+
+    public void removeSubcategoryId(String subcategoryId) {
+        this.subcategoryIds.remove(subcategoryId);
     }
 
     public static Builder builder() {

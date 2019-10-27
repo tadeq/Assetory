@@ -1,10 +1,10 @@
 package pl.edu.agh.assetory.model;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -20,16 +20,23 @@ import java.util.Set;
 @Component
 @Document(indexName = "assetory", type = "asset")
 @EqualsAndHashCode(callSuper = true)
-@Data
+@Getter
 @NoArgsConstructor
 public class Asset extends DBEntity {
     public static final String CATEGORY_ID_FIELD_KEY = "categoryId";
     public static final String NAME_FIELD_KEY = "name";
+
     @Field(type = FieldType.Keyword)
     private String name;
+
     @Field(type = FieldType.Keyword)
+    @Setter
     private String categoryId;
+
+    @Getter(AccessLevel.NONE)
     private List<AssetAttribute> attributes = Lists.newArrayList();
+
+    @Getter(AccessLevel.NONE)
     private Set<String> relatedAssetsIds = Sets.newHashSet();
 
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
@@ -42,6 +49,32 @@ public class Asset extends DBEntity {
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes, Set<String> relatedAssetsIds) {
         this(id, name, categoryId, attributes);
         this.relatedAssetsIds = relatedAssetsIds;
+    }
+
+    public List<AssetAttribute> getAttributes() {
+        return ImmutableList.copyOf(attributes);
+    }
+
+    public Set<String> getRelatedAssetsIds() {
+        return ImmutableSet.copyOf(relatedAssetsIds);
+    }
+
+    public void addAttribute(AssetAttribute attribute) {
+        this.attributes.add(attribute);
+    }
+
+    public void removeAttribute(AssetAttribute attribute) {
+        this.attributes.remove(attribute);
+    }
+
+    public void removeAttribute(String attributeName) {
+        this.attributes.stream()
+                .filter(attribute -> attribute.getAttribute().getName().equals(attributeName))
+                .findFirst().ifPresent(attribute -> this.attributes.remove(attribute));
+    }
+
+    public void addRelatedAssetId(String assetId) {
+        this.relatedAssetsIds.add(assetId);
     }
 
     public static Builder builder() {
