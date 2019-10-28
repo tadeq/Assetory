@@ -29,13 +29,18 @@ import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.model.DBEntity;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
+import pl.edu.agh.assetory.model.update.CategoryUpdate;
+import pl.edu.agh.assetory.repository.AssetsRepository;
+import pl.edu.agh.assetory.repository.CategoriesRepository;
 import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 @Service
 public class CategoriesService {
@@ -117,6 +122,31 @@ public class CategoriesService {
         newCategory.setId(id);
         client.update(idUpdate, RequestOptions.DEFAULT);
         return newCategory;
+    }
+
+    public Category updateCategory(CategoryUpdate categoryUpdate) {
+        Category category = categoryUpdate.getCategory();
+        Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        List<Asset> assets = getAssetsInCategory(category.getId(), true);
+        assets.forEach(asset -> attributeChanges.forEach((oldName, newName) -> {
+            Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
+                    .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
+                    .findFirst();
+            Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
+                    .filter(attribute -> attribute.getName().equals(newName))
+                    .findFirst();
+            oldAttribute.ifPresent(oldAttr -> {
+                asset.removeAttribute(oldAttr);
+                newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+            });
+        }));
+        assetsRepository.saveAll(assets);
+        return categoriesRepository.save(categoryUpdate.getCategory());
+    }
+
+    @Deprecated
+    public Category updateCategory(Category category) {
+        return categoriesRepository.save(category);
     }
 
     public void deleteCategory(Category category) throws IOException {
@@ -250,8 +280,8 @@ public class CategoriesService {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
-                parent.getSubcategoryIds().addAll(category.getSubcategoryIds());
+                parent.removeSubcategoryId(category.getId());
+                parent.addSubcategoryIds(category.getSubcategoryIds());
                 try {
                     updateCategory(parent);
                 } catch (IOException e) {
@@ -265,7 +295,7 @@ public class CategoriesService {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
+                parent.removeSubcategoryId(category.getId());
                 try {
                     updateCategory(parent);
                 } catch (IOException e) {

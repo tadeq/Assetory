@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
+import pl.edu.agh.assetory.model.update.CategoryUpdate;
 import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class CategoriesController {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    category.addSubcategory(savedSubcategory.getId());
+                    category.addSubcategoryId(savedSubcategory.getId());
                     try {
                         categoriesService.addCategory(category);
                     } catch (IOException e) {
@@ -64,14 +65,14 @@ public class CategoriesController {
             responseContainer = "List")
     public ResponseEntity<?> getAllCategories() throws IOException {
         Iterable<Category> list = categoriesService.getAllCategories();
-        int a = 10;
         return ResponseEntity.ok(list);
     }
 
     @PutMapping
     @ApiOperation(value = "updates category given in body",
-            notes = "category is recognized by id, categoryId name and attributeNames list can be updated")
-    public ResponseEntity<?> updateCategory(@RequestBody Category category) throws IOException {
+            notes = "category is recognized by id, categoryId name and attributeNames list can be updated; " +
+                    "changed attributes have to be provided in attributeChanges map")
+    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
 
