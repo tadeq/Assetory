@@ -6,10 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
+import pl.edu.agh.assetory.model.AssetsFilter;
 import pl.edu.agh.assetory.service.AssetsService;
+import pl.edu.agh.assetory.service.CategoriesService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 //import pl.edu.agh.assetory.service.CategoriesService;
 
@@ -18,7 +24,7 @@ import java.util.List;
 public class AssetsController {
 
     private AssetsService assetsService;
-//    private CategoriesService categoriesService;
+    private CategoriesService categoriesService;
 
     @Autowired
     public AssetsController(AssetsService assetsService) {
@@ -98,23 +104,23 @@ public class AssetsController {
         if (asset.getId() == null) return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(assetsService.saveAsset(asset));
     }
-//
-//    @PostMapping(value = "/filter")
-//    @ApiOperation(value = "Filters all assets",
-//            notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
-//    public ResponseEntity<?> filterAssetsByFields(@RequestBody AssetsFilter assetsFilter) {
-//        if (assetsFilter.getMainCategoryId() == null) {
-//            return ResponseEntity.badRequest().build();
-//        } else {
-//            Set<String> matchingCategoryIds = Optional.ofNullable(assetsFilter.getCategoryId())
-//                    .map(ids -> ids.stream()
-//                            .map(categoriesService::getMatchingCategoryIds)
-//                            .flatMap(Set::stream)
-//                            .collect(Collectors.toSet()))
-//                    .orElseGet(() -> categoriesService.getMatchingCategoryIds(assetsFilter.getMainCategoryId()));
-//            assetsFilter.setCategoryId(new ArrayList<>(matchingCategoryIds));
-//            return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
-//        }
-//
-//    }
+
+    @PostMapping(value = "/filter")
+    @ApiOperation(value = "Filters all assets",
+            notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
+    public ResponseEntity<?> filterAssetsByFields(@RequestBody AssetsFilter assetsFilter) throws IOException {
+        if (assetsFilter.getMainCategoryId() == null) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            Set<String> matchingCategoryIds = Optional.ofNullable(assetsFilter.getCategoryId())
+                    .map(ids -> ids.stream()
+                            .map(categoriesService::getMatchingCategoryIds)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet()))
+                    .orElseGet(() -> categoriesService.getMatchingCategoryIds(assetsFilter.getMainCategoryId()));
+            assetsFilter.setCategoryId(new ArrayList<>(matchingCategoryIds));
+            return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
+        }
+
+    }
 }
