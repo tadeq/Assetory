@@ -27,16 +27,10 @@ public class AssetsController {
     private CategoriesService categoriesService;
 
     @Autowired
-    public AssetsController(AssetsService assetsService) {
+    public AssetsController(AssetsService assetsService, CategoriesService categoriesService) {
         this.assetsService = assetsService;
+        this.categoriesService = categoriesService;
     }
-
-
-//    @Autowired
-//    public AssetsController(AssetsService assetsService, CategoriesService categoriesService) {
-//        this.assetsService = assetsService;
-//        this.categoriesService = categoriesService;
-//    }
 
     @PostMapping
     @ApiOperation(value = "adds new asset", response = Asset.class)
