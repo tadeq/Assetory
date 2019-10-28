@@ -237,7 +237,7 @@ public class CategoriesService {
             for (Object value : matchingCategoriesId) {
                 queryBuilder.should(QueryBuilders.matchQuery(Asset.CATEGORY_ID_FIELD_KEY, value).operator(Operator.AND));
             }
-            SearchRequest searchRequest = new SearchRequest("category");
+            SearchRequest searchRequest = new SearchRequest("asset");
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
             searchSourceBuilder.query(queryBuilder).size(10000);
             searchRequest.source(searchSourceBuilder);
