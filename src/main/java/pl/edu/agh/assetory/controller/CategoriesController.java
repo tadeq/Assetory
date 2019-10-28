@@ -72,7 +72,7 @@ public class CategoriesController {
     @ApiOperation(value = "updates category given in body",
             notes = "category is recognized by id, categoryId name and attributeNames list can be updated; " +
                     "changed attributes have to be provided in attributeChanges map")
-    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) {
+    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) throws IOException {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
 

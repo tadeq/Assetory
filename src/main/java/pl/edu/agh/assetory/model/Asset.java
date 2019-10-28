@@ -4,9 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
@@ -24,6 +22,7 @@ public class Asset extends DBEntity {
     public static final String CATEGORY_ID_FIELD_KEY = "categoryId";
     public static final String NAME_FIELD_KEY = "name";
     private String name;
+    @Setter
     private String categoryId;
 
     @Getter(AccessLevel.NONE)
@@ -42,6 +41,10 @@ public class Asset extends DBEntity {
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes, Set<String> relatedAssetsIds) {
         this(id, name, categoryId, attributes);
         this.relatedAssetsIds = relatedAssetsIds;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public List<AssetAttribute> getAttributes() {
@@ -68,10 +71,6 @@ public class Asset extends DBEntity {
 
     public void addRelatedAssetId(String assetId) {
         this.relatedAssetsIds.add(assetId);
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     public static class Builder {

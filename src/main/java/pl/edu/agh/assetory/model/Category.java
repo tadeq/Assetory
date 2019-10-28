@@ -2,9 +2,7 @@ package pl.edu.agh.assetory.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;

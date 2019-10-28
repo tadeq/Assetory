@@ -7,14 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchAutoConfiguration;
 import org.springframework.context.annotation.PropertySource;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
-
 
 import java.io.IOException;
 import java.util.Random;
@@ -124,23 +122,23 @@ public class App implements CommandLineRunner {
                 .parentCategoryId(software.getId())
                 .name("Antiviruses")
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(all)
                 .addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(software)
                 .addSubcategoryIds(Lists.newArrayList(operatingSystems.getId(), officeTools.getId(), antiviruses.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(hardware)
                 .addSubcategoryIds(Lists.newArrayList(computers.getId(), networkHardware.getId(), peripherals.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(computers)
                 .addSubcategoryIds(Lists.newArrayList(laptops.getId(), desktops.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(networkHardware)
                 .addSubcategoryIds(Lists.newArrayList(networkCards.getId(), routers.getId()))
                 .build());

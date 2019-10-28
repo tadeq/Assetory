@@ -32,15 +32,12 @@ import pl.edu.agh.assetory.model.DBEntity;
 import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 import pl.edu.agh.assetory.model.update.CategoryUpdate;
-import pl.edu.agh.assetory.repository.AssetsRepository;
-import pl.edu.agh.assetory.repository.CategoriesRepository;
 import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Service
 public class CategoriesService {
@@ -124,7 +121,7 @@ public class CategoriesService {
         return newCategory;
     }
 
-    public Category updateCategory(CategoryUpdate categoryUpdate) {
+    public Category updateCategory(CategoryUpdate categoryUpdate) throws IOException {
         Category category = categoryUpdate.getCategory();
         Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
@@ -140,13 +137,8 @@ public class CategoriesService {
                 newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
             });
         }));
-        assetsRepository.saveAll(assets);
-        return categoriesRepository.save(categoryUpdate.getCategory());
-    }
-
-    @Deprecated
-    public Category updateCategory(Category category) {
-        return categoriesRepository.save(category);
+        assetsService.saveAssets(assets);
+        return saveCategory(categoryUpdate.getCategory());
     }
 
     public void deleteCategory(Category category) throws IOException {
@@ -283,7 +275,7 @@ public class CategoriesService {
                 parent.removeSubcategoryId(category.getId());
                 parent.addSubcategoryIds(category.getSubcategoryIds());
                 try {
-                    updateCategory(parent);
+                    saveCategory(parent);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -297,7 +289,7 @@ public class CategoriesService {
             parentCategory.ifPresent(parent -> {
                 parent.removeSubcategoryId(category.getId());
                 try {
-                    updateCategory(parent);
+                    saveCategory(parent);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -333,7 +325,7 @@ public class CategoriesService {
         return categories;
     }
 
-    public Category updateCategory(Category category) throws IOException {
+    public Category saveCategory(Category category) throws IOException {
         Map<String, Object> documentMapper = objectMapper.convertValue(category, Map.class);
         UpdateRequest update = new UpdateRequest("category", category.getId()).doc(documentMapper);
         client.update(update, RequestOptions.DEFAULT);
