@@ -228,6 +228,7 @@ public class AssetsService {
         SearchRequest searchRequest = new SearchRequest("asset");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder);
+        searchSourceBuilder.size(10000);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
