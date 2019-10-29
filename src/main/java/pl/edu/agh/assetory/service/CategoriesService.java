@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -124,19 +125,45 @@ public class CategoriesService {
     public Category updateCategory(CategoryUpdate categoryUpdate) throws IOException {
         Category category = categoryUpdate.getCategory();
         Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        List<CategoryAttribute> newCategoryAttributes = Lists.newArrayList(category.getAdditionalAttributes());
+        Optional.ofNullable(category.getParentCategoryId()).ifPresent(parentId ->
+                findById(parentId).ifPresent(parentCategory ->
+                        newCategoryAttributes.addAll(getCategoryAttributes(parentCategory))));
+        Set<String> newAttributesNames = newCategoryAttributes.stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toSet());
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
-        assets.forEach(asset -> attributeChanges.forEach((oldName, newName) -> {
-            Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
-                    .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
-                    .findFirst();
-            Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
-                    .filter(attribute -> attribute.getName().equals(newName))
-                    .findFirst();
-            oldAttribute.ifPresent(oldAttr -> {
-                asset.removeAttribute(oldAttr);
-                newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+        assets.forEach(asset -> {
+            attributeChanges.forEach((oldName, newName) -> {
+                Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
+                        .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
+                        .findFirst();
+                Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
+                        .filter(attribute -> attribute.getName().equals(newName))
+                        .findFirst();
+                oldAttribute.ifPresent(oldAttr -> {
+                    asset.removeAttribute(oldAttr);
+                    newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+                });
             });
-        }));
+            List<AssetAttribute> assetAttributes = asset.getAttributes();
+            assetAttributes.forEach(attribute -> {
+                String name = attribute.getAttribute().getName();
+                if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)) {
+                    asset.removeAttribute(attribute);
+                }
+            });
+            Set<String> assetAttributesNames = assetAttributes.stream()
+                    .map(AssetAttribute::getAttribute)
+                    .map(CategoryAttribute::getName)
+                    .collect(Collectors.toSet());
+            newCategoryAttributes.forEach(attribute -> {
+                String name = attribute.getName();
+                if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
+                    asset.addAttribute(new AssetAttribute(attribute, ""));
+                }
+            });
+        });
         assetsService.saveAssets(assets);
         return saveCategory(categoryUpdate.getCategory());
     }
