@@ -2,6 +2,7 @@ package pl.edu.agh.assetory.controller;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Category;
@@ -9,6 +10,7 @@ import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.model.update.CategoryUpdate;
 import pl.edu.agh.assetory.service.CategoriesService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -25,10 +27,11 @@ public class CategoriesController {
     }
 
     @PostMapping
-    @ApiOperation(value = "adds new category",
+    @ApiOperation(
+            value = "adds new category",
             notes = "adds category that doesn't have a parent category",
             response = Category.class)
-    public ResponseEntity<?> addCategory(@RequestBody Category newCategory) {
+    public ResponseEntity<?> addCategory(@RequestBody Category newCategory) throws IOException {
         return ResponseEntity.ok(categoriesService.addCategory(newCategory));
     }
 
@@ -39,9 +42,18 @@ public class CategoriesController {
         return categoriesService.findById(id)
                 .map(category -> {
                     subcategory.setParentCategoryId(category.getId());
-                    Category savedSubcategory = categoriesService.addCategory(subcategory);
+                    Category savedSubcategory = null;
+                    try {
+                        savedSubcategory = categoriesService.addCategory(subcategory);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     category.addSubcategoryId(savedSubcategory.getId());
-                    categoriesService.addCategory(category);
+                    try {
+                        categoriesService.addCategory(category);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     return ResponseEntity.ok(savedSubcategory);
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -51,15 +63,16 @@ public class CategoriesController {
     @ApiOperation(value = "returns all categories",
             response = Category.class,
             responseContainer = "List")
-    public ResponseEntity<?> getAllCategories() {
-        return ResponseEntity.ok(categoriesService.getAllCategories());
+    public ResponseEntity<?> getAllCategories() throws IOException {
+        Iterable<Category> list = categoriesService.getAllCategories();
+        return ResponseEntity.ok(list);
     }
 
     @PutMapping
     @ApiOperation(value = "updates category given in body",
             notes = "category is recognized by id, categoryId name and attributeNames list can be updated; " +
                     "changed attributes have to be provided in attributeChanges map")
-    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) {
+    public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) throws IOException {
         return ResponseEntity.ok(categoriesService.updateCategory(category));
     }
 
@@ -74,18 +87,30 @@ public class CategoriesController {
     @ApiOperation(value = "deletes category with given id",
             notes = "assets will be moved to first super category")
     public ResponseEntity<?> deleteCategoryWithoutContent(@PathVariable String id) {
-        return deleteCategory(id, category -> categoriesService.deleteCategory(category));
+        return deleteCategory(id, category -> {
+            try {
+                categoriesService.deleteCategory(category);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @DeleteMapping(value = "/{id}/with-content")
     @ApiOperation(value = "deletes category by id with its all assets and subcategories ")
     public ResponseEntity<?> deleteCategoryWithContent(@PathVariable String id) {
-        return deleteCategory(id, category -> categoriesService.deleteCategoryWithContent(category));
+        return deleteCategory(id, category -> {
+            try {
+                categoriesService.deleteCategoryWithContent(category);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @GetMapping(value = "/trees")
     @ApiOperation(value = "returns categories hierarchy")
-    public ResponseEntity<?> getCategoryTrees() {
+    public ResponseEntity<?> getCategoryTrees() throws IOException {
         List<CategoryTree> categoryTrees = StreamSupport
                 .stream(categoriesService.getRootCategories().spliterator(), false)
                 .map(category -> categoriesService.createCategoryTree(category))
@@ -107,7 +132,14 @@ public class CategoriesController {
             notes = "includes all attributes in category")
     public ResponseEntity<?> getCategoryAttributesValues(@PathVariable String id, @RequestParam(required = false, defaultValue = "false") boolean withSubcategories) {
         return categoriesService.findById(id)
-                .map(category -> ResponseEntity.ok(categoriesService.getCategoryAttributesValues(category, withSubcategories)))
+                .map(category -> {
+                    try {
+                        return ResponseEntity.ok(categoriesService.getCategoryAttributesValues(category, withSubcategories));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 

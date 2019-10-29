@@ -3,7 +3,6 @@ package pl.edu.agh.assetory.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import lombok.*;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.stereotype.Component;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
@@ -12,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-@Document(indexName = "assetory", type = "category")
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @NoArgsConstructor

@@ -12,7 +12,12 @@ public class ClientWebConfig implements WebMvcConfigurer {
 
         registry.addMapping("/**")
                 .allowedOrigins(
-                        "http://localhost:3000")
+                        "http://localhost:3000",
+                        "https://assetory-react.herokuapp.com",
+                        "https://87.239.222.110",
+                        "https://89.64.14.99",
+                        "https://193.106.244.86",
+                        "https://assetory-react2.herokuapp.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD")
                 .allowCredentials(true);
     }

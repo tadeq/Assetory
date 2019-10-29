@@ -25,7 +25,9 @@ dependencies {
     implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: getProperty('springfox_version')
     implementation group: 'io.swagger', name: 'swagger-models', version: getProperty('swagger_version')
     implementation group: 'org.slf4j', name: 'slf4j-api', version: getProperty('slf4j_version')
-    implementation group: 'org.springframework.data', name: 'spring-data-elasticsearch', version: getProperty('spring_elasticsearch')
+    implementation('org.elasticsearch:elasticsearch:7.2.0'){force = true}
+    implementation('org.elasticsearch.client:elasticsearch-rest-high-level-client:7.2.0'){force = true}
+    implementation('org.elasticsearch.client:elasticsearch-rest-client:7.2.0')
 
     testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: getProperty('spring_version')
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: getProperty('junit_version')

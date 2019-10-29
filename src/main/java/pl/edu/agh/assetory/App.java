@@ -14,9 +14,10 @@ import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
+import java.io.IOException;
 import java.util.Random;
 
-@SpringBootApplication
+@SpringBootApplication()
 @PropertySource("classpath:application.properties")
 public class App implements CommandLineRunner {
 
@@ -34,7 +35,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        prepareTestStructure();
+        try {
+            assetsService.putMappings();
+            categoriesService.putMappings();
+            prepareTestStructure();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Cos duplo z IOException z elastica");
+        }
     }
 
 
@@ -43,7 +51,7 @@ public class App implements CommandLineRunner {
         return array[rnd];
     }
 
-    private void prepareTestStructure() {
+    private void prepareTestStructure() throws IOException {
         String[] users = {"John", "Xavier", "Carlos", "Juan", "Joe", "Tony", "Albert", "Cleo", "Phil"};
         Category all = categoriesService.addCategory(Category.builder()
                 .name("All")
@@ -114,23 +122,23 @@ public class App implements CommandLineRunner {
                 .parentCategoryId(software.getId())
                 .name("Antiviruses")
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(all)
                 .addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(software)
                 .addSubcategoryIds(Lists.newArrayList(operatingSystems.getId(), officeTools.getId(), antiviruses.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(hardware)
                 .addSubcategoryIds(Lists.newArrayList(computers.getId(), networkHardware.getId(), peripherals.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(computers)
                 .addSubcategoryIds(Lists.newArrayList(laptops.getId(), desktops.getId()))
                 .build());
-        categoriesService.updateCategory(Category.builder()
+        categoriesService.saveCategory(Category.builder()
                 .from(networkHardware)
                 .addSubcategoryIds(Lists.newArrayList(networkCards.getId(), routers.getId()))
                 .build());
