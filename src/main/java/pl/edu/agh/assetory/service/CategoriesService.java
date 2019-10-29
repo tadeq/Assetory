@@ -88,10 +88,12 @@ public class CategoriesService {
     public Optional<Category> findById(String categoryId) {
         GetRequest getRequest = new GetRequest("category", categoryId);
         GetResponse getResponse = null;
+        if(categoryId == null) return Optional.empty();
         try {
             getResponse = client.get(getRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             e.printStackTrace();
+            return Optional.empty();
         }
         if (getResponse.isExists()) {
             Map<String, Object> resultMap = getResponse.getSource();
