@@ -181,13 +181,15 @@ public class AssetsService {
     }
 
     void saveAssets(Collection<Asset> assets) throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        assets.forEach(asset -> {
-            UpdateRequest updateRequest = new UpdateRequest("asset", asset.getId()).
-                    doc(objectMapper.convertValue(asset, Map.class));
-            bulkRequest.add(updateRequest);
-        });
-        client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        if(!assets.isEmpty()) {
+            BulkRequest bulkRequest = new BulkRequest();
+            assets.forEach(asset -> {
+                UpdateRequest updateRequest = new UpdateRequest("asset", asset.getId()).
+                        doc(objectMapper.convertValue(asset, Map.class));
+                bulkRequest.add(updateRequest);
+            });
+            client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        }
     }
 
     void deleteAssets(Collection<Asset> assets) throws IOException {

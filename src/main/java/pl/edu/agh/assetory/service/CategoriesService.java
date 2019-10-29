@@ -367,13 +367,15 @@ public class CategoriesService {
     }
 
     private void saveCategories(Collection<Category> categories) throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        categories.forEach(category -> {
-            UpdateRequest updateRequest = new UpdateRequest("category", category.getId()).
-                    doc(objectMapper.convertValue(category, Map.class));
-            bulkRequest.add(updateRequest);
-        });
-        client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        if(!categories.isEmpty()) {
+            BulkRequest bulkRequest = new BulkRequest();
+            categories.forEach(category -> {
+                UpdateRequest updateRequest = new UpdateRequest("category", category.getId()).
+                        doc(objectMapper.convertValue(category, Map.class));
+                bulkRequest.add(updateRequest);
+            });
+            client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        }
     }
 
     private void deleteById(String categoryId) throws IOException {
