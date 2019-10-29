@@ -119,6 +119,11 @@ public class CategoriesService {
         UpdateRequest idUpdate = new UpdateRequest("category", id).doc("id", id);
         newCategory.setId(id);
         client.update(idUpdate, RequestOptions.DEFAULT);
+        String parentCategoryId = newCategory.getParentCategoryId();
+        Optional<Category> parentCategory = findById(parentCategoryId);
+        if(parentCategory.isPresent()) {
+            saveCategory(Category.builder().from(parentCategory.get()).addSubcategoryId(parentCategoryId).build());
+        }
         return newCategory;
     }
 
