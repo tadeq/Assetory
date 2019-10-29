@@ -122,7 +122,7 @@ public class CategoriesService {
         String parentCategoryId = newCategory.getParentCategoryId();
         Optional<Category> parentCategory = findById(parentCategoryId);
         if(parentCategory.isPresent()) {
-            saveCategory(Category.builder().from(parentCategory.get()).addSubcategoryId(parentCategoryId).build());
+            saveCategory(Category.builder().from(parentCategory.get()).addSubcategoryId(id).build());
         }
         return newCategory;
     }
