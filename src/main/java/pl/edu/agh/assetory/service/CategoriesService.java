@@ -88,7 +88,7 @@ public class CategoriesService {
     public Optional<Category> findById(String categoryId) {
         GetRequest getRequest = new GetRequest("category", categoryId);
         GetResponse getResponse = null;
-        if(categoryId == null) return Optional.empty();
+        if (categoryId == null) return Optional.empty();
         try {
             getResponse = client.get(getRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
@@ -123,7 +123,7 @@ public class CategoriesService {
         client.update(idUpdate, RequestOptions.DEFAULT);
         String parentCategoryId = newCategory.getParentCategoryId();
         Optional<Category> parentCategory = findById(parentCategoryId);
-        if(parentCategory.isPresent()) {
+        if (parentCategory.isPresent()) {
             saveCategory(Category.builder().from(parentCategory.get()).addSubcategoryId(id).build());
         }
         return newCategory;
@@ -140,38 +140,40 @@ public class CategoriesService {
                 .map(CategoryAttribute::getName)
                 .collect(Collectors.toSet());
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
-        assets.forEach(asset -> {
-            attributeChanges.forEach((oldName, newName) -> {
-                Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
-                        .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
-                        .findFirst();
-                Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
-                        .filter(attribute -> attribute.getName().equals(newName))
-                        .findFirst();
-                oldAttribute.ifPresent(oldAttr -> {
-                    asset.removeAttribute(oldAttr);
-                    newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+        if (!assets.isEmpty()) {
+            assets.forEach(asset -> {
+                attributeChanges.forEach((oldName, newName) -> {
+                    Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
+                            .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
+                            .findFirst();
+                    Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
+                            .filter(attribute -> attribute.getName().equals(newName))
+                            .findFirst();
+                    oldAttribute.ifPresent(oldAttr -> {
+                        asset.removeAttribute(oldAttr);
+                        newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+                    });
+                });
+                List<AssetAttribute> assetAttributes = asset.getAttributes();
+                assetAttributes.forEach(attribute -> {
+                    String name = attribute.getAttribute().getName();
+                    if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)) {
+                        asset.removeAttribute(attribute);
+                    }
+                });
+                Set<String> assetAttributesNames = assetAttributes.stream()
+                        .map(AssetAttribute::getAttribute)
+                        .map(CategoryAttribute::getName)
+                        .collect(Collectors.toSet());
+                newCategoryAttributes.forEach(attribute -> {
+                    String name = attribute.getName();
+                    if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
+                        asset.addAttribute(new AssetAttribute(attribute, ""));
+                    }
                 });
             });
-            List<AssetAttribute> assetAttributes = asset.getAttributes();
-            assetAttributes.forEach(attribute -> {
-                String name = attribute.getAttribute().getName();
-                if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)) {
-                    asset.removeAttribute(attribute);
-                }
-            });
-            Set<String> assetAttributesNames = assetAttributes.stream()
-                    .map(AssetAttribute::getAttribute)
-                    .map(CategoryAttribute::getName)
-                    .collect(Collectors.toSet());
-            newCategoryAttributes.forEach(attribute -> {
-                String name = attribute.getName();
-                if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
-                    asset.addAttribute(new AssetAttribute(attribute, ""));
-                }
-            });
-        });
-        assetsService.saveAssets(assets);
+            assetsService.saveAssets(assets);
+        }
         return saveCategory(categoryUpdate.getCategory());
     }
 
@@ -204,7 +206,9 @@ public class CategoriesService {
 
     public void deleteCategoryWithContent(Category category) throws IOException {
         List<Asset> assets = assetsService.getByCategoryId(category.getId());
-        assetsService.deleteAssets(assets);
+        if (!assets.isEmpty()) {
+            assetsService.deleteAssets(assets);
+        }
         List<Category> childCategories = getCategoriesByParentCategoryId(category.getId());
         for (Category childCategory : childCategories) {
             deleteCategoryWithContent(childCategory);
@@ -367,7 +371,7 @@ public class CategoriesService {
     }
 
     private void saveCategories(Collection<Category> categories) throws IOException {
-        if(!categories.isEmpty()) {
+        if (!categories.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
             categories.forEach(category -> {
                 UpdateRequest updateRequest = new UpdateRequest("category", category.getId()).

@@ -120,9 +120,9 @@ public class AssetsService {
         return getSearchResult(searchResponse);
     }
 
-    public Optional<Asset> getByCategoryIdAndName(String categoryId, String name) throws IOException {
+    public Optional<Asset> getByCategoryIdAndName(Collection<String> categoryIds, String name) throws IOException {
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
-                .must(QueryBuilders.termQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryId))
+                .must(QueryBuilders.termsQuery(AssetsFilter.CATEGORY_ID_FIELD, categoryIds.toArray()))
                 .must(QueryBuilders.termQuery(AssetsFilter.NAME_FIELD, name));
         SearchRequest searchRequest = new SearchRequest("asset").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
