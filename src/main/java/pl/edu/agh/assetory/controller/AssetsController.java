@@ -17,8 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-//import pl.edu.agh.assetory.service.CategoriesService;
-
 @RestController
 @RequestMapping(value = "/assets")
 public class AssetsController {
@@ -61,7 +59,7 @@ public class AssetsController {
             value = "returns asset with given name within given category",
             response = Asset.class)
     public ResponseEntity<?> getAssetByCategoryAndName(@PathVariable String categoryId, @PathVariable String name) throws IOException {
-        return assetsService.getByCategoryIdAndName(categoryId, name)
+        return assetsService.getByCategoryIdAndName(categoriesService.getMatchingCategoryIds(categoryId), name)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

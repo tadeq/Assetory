@@ -122,26 +122,6 @@ public class App implements CommandLineRunner {
                 .parentCategoryId(software.getId())
                 .name("Antiviruses")
                 .build());
-        categoriesService.saveCategory(Category.builder()
-                .from(all)
-                .addSubcategoryIds(Lists.newArrayList(hardware.getId(), software.getId()))
-                .build());
-        categoriesService.saveCategory(Category.builder()
-                .from(software)
-                .addSubcategoryIds(Lists.newArrayList(operatingSystems.getId(), officeTools.getId(), antiviruses.getId()))
-                .build());
-        categoriesService.saveCategory(Category.builder()
-                .from(hardware)
-                .addSubcategoryIds(Lists.newArrayList(computers.getId(), networkHardware.getId(), peripherals.getId()))
-                .build());
-        categoriesService.saveCategory(Category.builder()
-                .from(computers)
-                .addSubcategoryIds(Lists.newArrayList(laptops.getId(), desktops.getId()))
-                .build());
-        categoriesService.saveCategory(Category.builder()
-                .from(networkHardware)
-                .addSubcategoryIds(Lists.newArrayList(networkCards.getId(), routers.getId()))
-                .build());
 
         for (int i = 0; i < 5; i++) {
             String[] locations = {"Office", "Room", "Lab", "Meeting Room"};
