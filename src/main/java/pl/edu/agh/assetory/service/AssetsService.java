@@ -193,12 +193,14 @@ public class AssetsService {
     }
 
     void deleteAssets(Collection<Asset> assets) throws IOException {
-        BulkRequest bulkRequest = new BulkRequest();
-        assets.forEach(asset -> {
-            DeleteRequest deleteRequest = new DeleteRequest("asset", asset.getId());
-            bulkRequest.add(deleteRequest);
-        });
-        client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        if(!assets.isEmpty()) {
+            BulkRequest bulkRequest = new BulkRequest();
+            assets.forEach(asset -> {
+                DeleteRequest deleteRequest = new DeleteRequest("asset", asset.getId());
+                bulkRequest.add(deleteRequest);
+            });
+            client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        }
     }
 
 
