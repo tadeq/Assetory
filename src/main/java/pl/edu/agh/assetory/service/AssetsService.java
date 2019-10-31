@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
+import pl.edu.agh.assetory.model.update.AssetAttributesUpdate;
 
 import java.io.IOException;
 import java.util.*;
@@ -148,6 +150,20 @@ public class AssetsService {
         return getSearchResult(searchResponse);
     }
 
+    public Optional<Asset> updateAssetAttributes(AssetAttributesUpdate attributesUpdate) throws IOException {
+        Optional<Asset> assetOpt = getById(attributesUpdate.getId());
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            Map<String, String> attributes = attributesUpdate.getAttributes();
+            attributes.forEach((name, value) -> asset.getAttribute(name).ifPresent(attribute -> {
+                asset.removeAttribute(name);
+                asset.addAttribute(new AssetAttribute(attribute.getAttribute(), value));
+            }));
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
     public DocWriteResponse.Result deleteAsset(String assetId) throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest("asset", assetId);
         return client.delete(deleteRequest, RequestOptions.DEFAULT).getResult();
@@ -181,7 +197,7 @@ public class AssetsService {
     }
 
     void saveAssets(Collection<Asset> assets) throws IOException {
-        if(!assets.isEmpty()) {
+        if (!assets.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
             assets.forEach(asset -> {
                 UpdateRequest updateRequest = new UpdateRequest("asset", asset.getId()).
@@ -193,7 +209,7 @@ public class AssetsService {
     }
 
     void deleteAssets(Collection<Asset> assets) throws IOException {
-        if(!assets.isEmpty()) {
+        if (!assets.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
             assets.forEach(asset -> {
                 DeleteRequest deleteRequest = new DeleteRequest("asset", asset.getId());

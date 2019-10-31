@@ -12,6 +12,7 @@ import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -49,6 +50,12 @@ public class Asset extends DBEntity {
 
     public List<AssetAttribute> getAttributes() {
         return ImmutableList.copyOf(attributes);
+    }
+
+    public Optional<AssetAttribute> getAttribute(String attributeName) {
+        return attributes.stream()
+                .filter(attribute -> attribute.getAttribute().getName().equals(attributeName))
+                .findFirst();
     }
 
     public Set<String> getRelatedAssetsIds() {
