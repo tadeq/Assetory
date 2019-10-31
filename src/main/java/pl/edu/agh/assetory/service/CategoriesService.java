@@ -1,89 +1,233 @@
 package pl.edu.agh.assetory.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.CategoryTree;
 import pl.edu.agh.assetory.model.DBEntity;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
 import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
-import pl.edu.agh.assetory.repository.AssetsRepository;
-import pl.edu.agh.assetory.repository.CategoriesRepository;
+import pl.edu.agh.assetory.model.update.CategoryUpdate;
 import pl.edu.agh.assetory.utils.NumberAwareStringComparator;
 
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @Service
 public class CategoriesService {
-    @Autowired
-    @Qualifier("categoriesRepository")
-    private CategoriesRepository categoriesRepository;
+    private RestHighLevelClient client;
+
+    private ObjectMapper objectMapper;
+    private AssetsService assetsService;
 
     @Autowired
-    @Qualifier("assetsRepository")
-    private AssetsRepository assetsRepository;
+    public CategoriesService(RestHighLevelClient client, ObjectMapper objectMapper, AssetsService assetsService) {
+        this.client = client;
+        this.objectMapper = objectMapper;
+        this.assetsService = assetsService;
+    }
+
+
+    public void putMappings() throws IOException {
+        CreateIndexRequest request = new CreateIndexRequest("category");
+        XContentBuilder builder = XContentFactory.jsonBuilder();
+        builder.startObject();
+        {
+            builder.startObject("properties");
+            {
+                builder.startObject("id");
+                {
+                    builder.field("type", "keyword");
+                }
+                builder.endObject();
+                builder.startObject("name");
+                {
+                    builder.field("type", "keyword");
+                }
+                builder.endObject();
+                builder.startObject("parentCategoryId");
+                {
+                    builder.field("type", "keyword");
+                }
+                builder.endObject();
+            }
+            builder.endObject();
+        }
+        builder.endObject();
+        request.mapping(builder);
+        client.indices().create(request, RequestOptions.DEFAULT);
+    }
 
     public Optional<Category> findById(String categoryId) {
-        return categoriesRepository.findById(categoryId);
+        GetRequest getRequest = new GetRequest("category", categoryId);
+        GetResponse getResponse = null;
+        if (categoryId == null) return Optional.empty();
+        try {
+            getResponse = client.get(getRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+        if (getResponse.isExists()) {
+            Map<String, Object> resultMap = getResponse.getSource();
+            return Optional.of(objectMapper.convertValue(resultMap, Category.class));
+        } else {
+            return Optional.empty();
+        }
     }
 
-    public List<Category> findByName(String categoryName) {
-        return categoriesRepository.getCategoriesByName(categoryName);
+    public List<Category> findByName(String categoryName) throws IOException {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(Category.NAME_FIELD_KEY, categoryName));
+        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse);
     }
 
-    public Category addCategory(Category newCategory) {
-        return categoriesRepository.save(newCategory);
+    public Category addCategory(Category newCategory) throws IOException {
+        IndexRequest request = new IndexRequest("category");
+        Map<String, Object> documentMapper = objectMapper.convertValue(newCategory, Map.class);
+        request.source(documentMapper, XContentType.JSON);
+        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
+        String id = response.getId();
+        UpdateRequest idUpdate = new UpdateRequest("category", id).doc("id", id);
+        newCategory.setId(id);
+        client.update(idUpdate, RequestOptions.DEFAULT);
+        String parentCategoryId = newCategory.getParentCategoryId();
+        Optional<Category> parentCategory = findById(parentCategoryId);
+        if (parentCategory.isPresent()) {
+            saveCategory(Category.builder().from(parentCategory.get()).addSubcategoryId(id).build());
+        }
+        return newCategory;
     }
 
-    public Category updateCategory(Category category) {
-        return categoriesRepository.save(category);
+    public Category updateCategory(CategoryUpdate categoryUpdate) throws IOException {
+        Category category = categoryUpdate.getCategory();
+        Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        List<CategoryAttribute> newCategoryAttributes = Lists.newArrayList(category.getAdditionalAttributes());
+        Optional.ofNullable(category.getParentCategoryId()).ifPresent(parentId ->
+                findById(parentId).ifPresent(parentCategory ->
+                        newCategoryAttributes.addAll(getCategoryAttributes(parentCategory))));
+        Set<String> newAttributesNames = newCategoryAttributes.stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toSet());
+        List<Asset> assets = getAssetsInCategory(category.getId(), true);
+        if (!assets.isEmpty()) {
+            assets.forEach(asset -> {
+                attributeChanges.forEach((oldName, newName) -> {
+                    Optional<AssetAttribute> oldAttribute = asset.getAttributes().stream()
+                            .filter(attribute -> attribute.getAttribute().getName().equals(oldName))
+                            .findFirst();
+                    Optional<CategoryAttribute> newAttribute = category.getAdditionalAttributes().stream()
+                            .filter(attribute -> attribute.getName().equals(newName))
+                            .findFirst();
+                    oldAttribute.ifPresent(oldAttr -> {
+                        asset.removeAttribute(oldAttr);
+                        newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+                    });
+                });
+                List<AssetAttribute> assetAttributes = asset.getAttributes();
+                assetAttributes.forEach(attribute -> {
+                    String name = attribute.getAttribute().getName();
+                    if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)) {
+                        asset.removeAttribute(attribute);
+                    }
+                });
+                Set<String> assetAttributesNames = assetAttributes.stream()
+                        .map(AssetAttribute::getAttribute)
+                        .map(CategoryAttribute::getName)
+                        .collect(Collectors.toSet());
+                newCategoryAttributes.forEach(attribute -> {
+                    String name = attribute.getName();
+                    if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
+                        asset.addAttribute(new AssetAttribute(attribute, ""));
+                    }
+                });
+            });
+            assetsService.saveAssets(assets);
+        }
+        return saveCategory(categoryUpdate.getCategory());
     }
 
-    public void deleteCategory(Category category) {
+    public void deleteCategory(Category category) throws IOException {
         updateParentCategorySubcategoryIds(category);
         String deletedCategoryParentId = category.getParentCategoryId();
-        List<Category> childCategories = categoriesRepository.getCategoriesByParentCategoryId(category.getId());
+        List<Category> childCategories = getCategoriesByParentCategoryId(category.getId());
         if (!childCategories.isEmpty()) {
             childCategories.forEach(c -> c.setParentCategoryId(deletedCategoryParentId));
-            categoriesRepository.saveAll(childCategories);
+            saveCategories(childCategories);
         }
-        List<Asset> assets = assetsRepository.getAssetsByCategoryId(category.getId());
+        List<Asset> assets = assetsService.getByCategoryId(category.getId());
         if (!assets.isEmpty()) {
             assets.forEach(a -> a.setCategoryId(deletedCategoryParentId));
-            assetsRepository.saveAll(assets);
+            assetsService.saveAssets(assets);
         }
-        categoriesRepository.delete(category);
+        deleteById(category.getId());
     }
 
-    public Iterable<Category> getAllCategories() {
-        return categoriesRepository.findAll();
+    public Iterable<Category> getAllCategories() throws IOException {
+        SearchRequest searchRequest = new SearchRequest("category");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery()).size(10000);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse);
     }
 
-    public void deleteCategoryWithContent(Category category) {
-        List<Asset> assets = assetsRepository.getAssetsByCategoryId(category.getId());
-        assetsRepository.deleteAll(assets);
-        List<Category> childCategories = categoriesRepository.getCategoriesByParentCategoryId(category.getId());
-        childCategories.forEach(this::deleteCategoryWithContent);
+    public void deleteCategoryWithContent(Category category) throws IOException {
+        List<Asset> assets = assetsService.getByCategoryId(category.getId());
+        if (!assets.isEmpty()) {
+            assetsService.deleteAssets(assets);
+        }
+        List<Category> childCategories = getCategoriesByParentCategoryId(category.getId());
+        for (Category childCategory : childCategories) {
+            deleteCategoryWithContent(childCategory);
+        }
         removeFromParentCategorySubcategoryIds(category);
-        categoriesRepository.delete(category);
+        deleteCategory(category);
     }
 
-    public Iterable<Category> getRootCategories() {
+    public Iterable<Category> getRootCategories() throws IOException {
+
+        SearchRequest searchRequest = new SearchRequest("category");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(Category.PARENT_ID_FIELD_KEY));
-        return categoriesRepository.search(queryBuilder);
+        searchSourceBuilder.query(queryBuilder).size(10000);
+        searchRequest.source(searchSourceBuilder);
+
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse);
     }
 
     public CategoryTree createCategoryTree(Category category) {
@@ -124,7 +268,7 @@ public class CategoriesService {
         return Sets.newHashSet();
     }
 
-    public Map<String, List<String>> getCategoryAttributesValues(Category category, boolean withSubcategories) {
+    public Map<String, List<String>> getCategoryAttributesValues(Category category, boolean withSubcategories) throws IOException {
         List<Asset> assets = getAssetsInCategory(category.getId(), withSubcategories);
         List<String> attributeNames = getCategoryAttributes(category).stream()
                 .map(CategoryAttribute::getName)
@@ -146,25 +290,33 @@ public class CategoriesService {
         return attributesValues;
     }
 
-    private List<Asset> getAssetsInCategory(String categoryId, boolean withSubcategories) {
+    private List<Asset> getAssetsInCategory(String categoryId, boolean withSubcategories) throws IOException {
         if (withSubcategories) {
             Set<String> matchingCategoriesId = getMatchingCategoryIds(categoryId);
             BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
             for (Object value : matchingCategoriesId) {
                 queryBuilder.should(QueryBuilders.matchQuery(Asset.CATEGORY_ID_FIELD_KEY, value).operator(Operator.AND));
             }
-            return StreamSupport.stream(assetsRepository.search(queryBuilder).spliterator(), false).collect(Collectors.toList());
+            SearchRequest searchRequest = new SearchRequest("asset");
+            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+            searchSourceBuilder.query(queryBuilder).size(10000);
+            searchRequest.source(searchSourceBuilder);
+            return assetsService.getSearchResult(client.search(searchRequest, RequestOptions.DEFAULT));
         }
-        return assetsRepository.getAssetsByCategoryId(categoryId);
+        return assetsService.getByCategoryId(categoryId);
     }
 
     private void updateParentCategorySubcategoryIds(Category category) {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
-                parent.getSubcategoryIds().addAll(category.getSubcategoryIds());
-                categoriesRepository.save(parent);
+                parent.removeSubcategoryId(category.getId());
+                parent.addSubcategoryIds(category.getSubcategoryIds());
+                try {
+                    saveCategory(parent);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
         });
     }
@@ -173,9 +325,65 @@ public class CategoriesService {
         Optional.ofNullable(category.getParentCategoryId()).ifPresent(id -> {
             Optional<Category> parentCategory = findById(id);
             parentCategory.ifPresent(parent -> {
-                parent.getSubcategoryIds().remove(category.getId());
-                categoriesRepository.save(parent);
+                parent.removeSubcategoryId(category.getId());
+                try {
+                    saveCategory(parent);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             });
         });
+    }
+
+    private List<Category> getCategoriesByParentCategoryId(String parentCategoryId) throws IOException {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(Category.PARENT_ID_FIELD_KEY, parentCategoryId));
+        SearchRequest searchRequest = new SearchRequest("category").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse);
+    }
+
+    private List<Category> getSearchResult(SearchResponse response) {
+
+        SearchHit[] searchHit = response.getHits().getHits();
+
+        List<Category> categories = new ArrayList<>();
+
+        if (searchHit.length > 0) {
+
+            Arrays.stream(searchHit)
+                    .forEach(hit -> categories
+                            .add(objectMapper
+                                    .convertValue(hit.getSourceAsMap(),
+                                            Category.class))
+                    );
+        }
+
+        return categories;
+    }
+
+    public Category saveCategory(Category category) throws IOException {
+        Map<String, Object> documentMapper = objectMapper.convertValue(category, Map.class);
+        UpdateRequest update = new UpdateRequest("category", category.getId()).doc(documentMapper);
+        client.update(update, RequestOptions.DEFAULT);
+        return category;
+    }
+
+    private void saveCategories(Collection<Category> categories) throws IOException {
+        if (!categories.isEmpty()) {
+            BulkRequest bulkRequest = new BulkRequest();
+            categories.forEach(category -> {
+                UpdateRequest updateRequest = new UpdateRequest("category", category.getId()).
+                        doc(objectMapper.convertValue(category, Map.class));
+                bulkRequest.add(updateRequest);
+            });
+            client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        }
+    }
+
+    private void deleteById(String categoryId) throws IOException {
+        DeleteRequest deleteRequest = new DeleteRequest("category", categoryId);
+        client.delete(deleteRequest, RequestOptions.DEFAULT).getResult();
     }
 }
