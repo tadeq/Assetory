@@ -66,6 +66,10 @@ public class Asset extends DBEntity {
         this.attributes.add(attribute);
     }
 
+    public void addAttribute(int index, AssetAttribute attribute) {
+        this.attributes.add(index, attribute);
+    }
+
     public void removeAttribute(AssetAttribute attribute) {
         this.attributes.remove(attribute);
     }
