@@ -1,6 +1,5 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +12,7 @@ import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
+import pl.edu.agh.assetory.service.ComputerInformationService;
 
 import java.io.IOException;
 import java.util.Random;
@@ -27,6 +27,8 @@ public class App implements CommandLineRunner {
     private AssetsService assetsService;
     @Autowired
     private CategoriesService categoriesService;
+    @Autowired
+    private ComputerInformationService computerInformationService;
 
     public static void main(String[] args) {
         log.info("Starting app");
@@ -38,6 +40,7 @@ public class App implements CommandLineRunner {
         try {
             assetsService.putMappings();
             categoriesService.putMappings();
+            computerInformationService.putMappings();
             prepareTestStructure();
         } catch (IOException e) {
             e.printStackTrace();
