@@ -18,5 +18,5 @@ public class ComputerInformation {
     private String dateTime;
     private Map<String, String> system;
     private Map<String, String> hardware;
-    private List<SoftwareRecord> software;
+    private Map<String, List<SoftwareRecord>> software;
 }

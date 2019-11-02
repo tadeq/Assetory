@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 public class SoftwareRecord {
     private String name;
     private String version;
-    private String publisher;
     private String installDate;
 }
