@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -136,10 +137,21 @@ public class CategoriesService {
             return Optional.empty();
         }
         Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        Set<String> attributeChangesKeySet = ImmutableSet.copyOf(attributeChanges.keySet());
+        attributeChangesKeySet.forEach(key -> {
+            String newKey = attributeChanges.get(key);
+            while (attributeChanges.containsKey(newKey) && !newKey.equals(key)) {
+                String nextKey = attributeChanges.get(newKey);
+                attributeChanges.remove(newKey);
+                newKey = nextKey;
+            }
+            attributeChanges.put(key, newKey);
+        });
         List<CategoryAttribute> newCategoryAttributes = Lists.newArrayList(category.getAdditionalAttributes());
-        Optional.ofNullable(category.getParentCategoryId()).ifPresent(parentId ->
-                findById(parentId).ifPresent(parentCategory ->
-                        newCategoryAttributes.addAll(getCategoryAttributes(parentCategory))));
+        Optional<Category> parentCategory = Optional.ofNullable(category.getParentCategoryId()).flatMap(this::findById);
+        List<CategoryAttribute> parentCategoryAttributes = Lists.newArrayList();
+        parentCategory.ifPresent(parent -> parentCategoryAttributes.addAll(getCategoryAttributes(parent)));
+        newCategoryAttributes.addAll(parentCategoryAttributes);
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
         if (!assets.isEmpty()) {
             assets.forEach(asset -> {
@@ -151,9 +163,13 @@ public class CategoriesService {
                             .filter(attribute -> attribute.getName().equals(newName))
                             .findFirst();
                     oldAttribute.ifPresent(oldAttr -> {
-                        int index = asset.getAttributes().indexOf(oldAttr);
+                        int index = findAttributeIndex(newCategoryAttributes, oldAttr.getAttribute().getName()) + parentCategoryAttributes.size();
                         asset.removeAttribute(oldAttr);
-                        newAttribute.ifPresent(newAttr -> asset.addAttribute(index, new AssetAttribute(newAttr, oldAttr.getValue())));
+                        if (index < asset.getAttributes().size() - 1) {
+                            index++;
+                        }
+                        int finalIndex = index;
+                        newAttribute.ifPresent(newAttr -> asset.addAttribute(finalIndex, new AssetAttribute(newAttr, oldAttr.getValue())));
                     });
                 });
                 List<AssetAttribute> assetAttributes = asset.getAttributes();
@@ -177,13 +193,23 @@ public class CategoriesService {
                 newCategoryAttributes.forEach(attribute -> {
                     String name = attribute.getName();
                     if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
-                        asset.addAttribute(new AssetAttribute(attribute, ""));
+                        int index = findAttributeIndex(newCategoryAttributes, name) + parentCategoryAttributes.size();
+                        if (index < asset.getAttributes().size() - 1)
+                            index++;
+                        asset.addAttribute(index, new AssetAttribute(attribute, ""));
                     }
                 });
             });
             assetsService.saveAssets(assets);
         }
         return Optional.of(saveCategory(categoryUpdate.getCategory()));
+    }
+
+    private int findAttributeIndex(Collection<CategoryAttribute> attributes, String attributeName) {
+        return attributes.stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toList())
+                .indexOf(attributeName);
     }
 
     public void deleteCategory(Category category) throws IOException {
