@@ -153,6 +153,7 @@ public class CategoriesService {
         parentCategory.ifPresent(parent -> parentCategoryAttributes.addAll(getCategoryAttributes(parent)));
         newCategoryAttributes.addAll(parentCategoryAttributes);
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
+        List<CategoryAttribute> oldCategoryAttributes = oldCategory.get().getAdditionalAttributes();
         if (!assets.isEmpty()) {
             assets.forEach(asset -> {
                 attributeChanges.forEach((oldName, newName) -> {
@@ -163,13 +164,9 @@ public class CategoriesService {
                             .filter(attribute -> attribute.getName().equals(newName))
                             .findFirst();
                     oldAttribute.ifPresent(oldAttr -> {
-                        int index = findAttributeIndex(newCategoryAttributes, oldAttr.getAttribute().getName()) + parentCategoryAttributes.size();
+                        int index = findAttributeIndex(oldCategoryAttributes, oldAttr.getAttribute().getName()) + parentCategoryAttributes.size();
                         asset.removeAttribute(oldAttr);
-                        if (index < asset.getAttributes().size() - 1) {
-                            index++;
-                        }
-                        int finalIndex = index;
-                        newAttribute.ifPresent(newAttr -> asset.addAttribute(finalIndex, new AssetAttribute(newAttr, oldAttr.getValue())));
+                        newAttribute.ifPresent(newAttr -> asset.addAttribute(index, new AssetAttribute(newAttr, oldAttr.getValue())));
                     });
                 });
                 List<AssetAttribute> assetAttributes = asset.getAttributes();
