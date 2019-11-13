@@ -12,6 +12,7 @@ import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Component
@@ -51,12 +52,22 @@ public class Asset extends DBEntity {
         return ImmutableList.copyOf(attributes);
     }
 
+    public Optional<AssetAttribute> getAttribute(String attributeName) {
+        return attributes.stream()
+                .filter(attribute -> attribute.getAttribute().getName().equals(attributeName))
+                .findFirst();
+    }
+
     public Set<String> getRelatedAssetsIds() {
         return ImmutableSet.copyOf(relatedAssetsIds);
     }
 
     public void addAttribute(AssetAttribute attribute) {
         this.attributes.add(attribute);
+    }
+
+    public void addAttribute(int index, AssetAttribute attribute) {
+        this.attributes.add(index, attribute);
     }
 
     public void removeAttribute(AssetAttribute attribute) {
