@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
+import pl.edu.agh.assetory.model.update.AssetAttributesUpdate;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
 
@@ -83,8 +84,9 @@ public class AssetsController {
     @DeleteMapping(value = "/{id}")
     @ApiOperation(value = "deletes asset with given id")
     public ResponseEntity<?> deleteAsset(@PathVariable String id) throws IOException {
-        if (assetsService.deleteAsset(id) == DocWriteResponse.Result.DELETED) return ResponseEntity.noContent().build();
-        else return ResponseEntity.notFound().build();
+        if (assetsService.deleteAsset(id) == DocWriteResponse.Result.DELETED)
+            return ResponseEntity.noContent().build();
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping
@@ -93,8 +95,22 @@ public class AssetsController {
             notes = "asset is recognized by id, name is mandatory, other attributes will be removed if not provided",
             response = Asset.class)
     public ResponseEntity<?> updateAsset(@RequestBody Asset asset) throws IOException {
-        if (asset.getId() == null) return ResponseEntity.badRequest().build();
+        if (asset.getId() == null)
+            return ResponseEntity.badRequest().build();
         return ResponseEntity.ok(assetsService.saveAsset(asset));
+    }
+
+    @PutMapping(value = "/attributes")
+    @ApiOperation(value = "updates asset attributes only",
+            notes = "asset is recognized by id given in body",
+            response = Asset.class)
+    public ResponseEntity<?> updateAssetAttributes(@RequestBody AssetAttributesUpdate attributesUpdate) throws IOException {
+        if (attributesUpdate.getId() == null)
+            return ResponseEntity.badRequest().build();
+        Optional<Asset> asset = assetsService.updateAssetAttributes(attributesUpdate);
+        if (asset.isPresent())
+            return ResponseEntity.ok(assetsService.saveAsset(asset.get()));
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping(value = "/filter")

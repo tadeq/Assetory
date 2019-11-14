@@ -26,9 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.edu.agh.assetory.model.Asset;
 import pl.edu.agh.assetory.model.AssetsFilter;
+import pl.edu.agh.assetory.model.attributes.AssetAttribute;
+import pl.edu.agh.assetory.model.attributes.CategoryAttribute;
+import pl.edu.agh.assetory.model.update.AssetAttributesUpdate;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -148,6 +152,31 @@ public class AssetsService {
         return getSearchResult(searchResponse);
     }
 
+    public Optional<Asset> updateAssetAttributes(AssetAttributesUpdate attributesUpdate) throws IOException {
+        Optional<Asset> assetOpt = getById(attributesUpdate.getId());
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            List<CategoryAttribute> assetAttributes = asset.getAttributes().stream()
+                    .map(AssetAttribute::getAttribute)
+                    .collect(Collectors.toList());
+            Map<String, String> attributes = attributesUpdate.getAttributes();
+            attributes.forEach((name, value) -> asset.getAttribute(name).ifPresent(attribute -> {
+                int index = findAttributeIndex(assetAttributes, name);
+                asset.removeAttribute(name);
+                asset.addAttribute(index, new AssetAttribute(attribute.getAttribute(), value));
+            }));
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    private int findAttributeIndex(Collection<CategoryAttribute> attributes, String attributeName) {
+        return attributes.stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toList())
+                .indexOf(attributeName);
+    }
+
     public DocWriteResponse.Result deleteAsset(String assetId) throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest("asset", assetId);
         return client.delete(deleteRequest, RequestOptions.DEFAULT).getResult();
@@ -181,7 +210,7 @@ public class AssetsService {
     }
 
     void saveAssets(Collection<Asset> assets) throws IOException {
-        if(!assets.isEmpty()) {
+        if (!assets.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
             assets.forEach(asset -> {
                 UpdateRequest updateRequest = new UpdateRequest("asset", asset.getId()).
@@ -193,7 +222,7 @@ public class AssetsService {
     }
 
     void deleteAssets(Collection<Asset> assets) throws IOException {
-        if(!assets.isEmpty()) {
+        if (!assets.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
             assets.forEach(asset -> {
                 DeleteRequest deleteRequest = new DeleteRequest("asset", asset.getId());
