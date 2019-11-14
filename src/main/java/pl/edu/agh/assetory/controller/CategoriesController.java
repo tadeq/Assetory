@@ -73,7 +73,9 @@ public class CategoriesController {
             notes = "category is recognized by id, categoryId name and attributeNames list can be updated; " +
                     "changed attributes have to be provided in attributeChanges map")
     public ResponseEntity<?> updateCategory(@RequestBody CategoryUpdate category) throws IOException {
-        return ResponseEntity.ok(categoriesService.updateCategory(category));
+        return categoriesService.updateCategory(category)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "/{id}")
