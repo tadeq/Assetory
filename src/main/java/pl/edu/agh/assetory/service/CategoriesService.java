@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -129,17 +130,30 @@ public class CategoriesService {
         return newCategory;
     }
 
-    public Category updateCategory(CategoryUpdate categoryUpdate) throws IOException {
+    public Optional<Category> updateCategory(CategoryUpdate categoryUpdate) throws IOException {
         Category category = categoryUpdate.getCategory();
+        Optional<Category> oldCategory = findById(category.getId());
+        if (!oldCategory.isPresent()) {
+            return Optional.empty();
+        }
         Map<String, String> attributeChanges = categoryUpdate.getAttributeChanges();
+        Set<String> attributeChangesKeySet = ImmutableSet.copyOf(attributeChanges.keySet());
+        attributeChangesKeySet.forEach(key -> {
+            String newKey = attributeChanges.get(key);
+            while (attributeChanges.containsKey(newKey) && !newKey.equals(key)) {
+                String nextKey = attributeChanges.get(newKey);
+                attributeChanges.remove(newKey);
+                newKey = nextKey;
+            }
+            attributeChanges.put(key, newKey);
+        });
         List<CategoryAttribute> newCategoryAttributes = Lists.newArrayList(category.getAdditionalAttributes());
-        Optional.ofNullable(category.getParentCategoryId()).ifPresent(parentId ->
-                findById(parentId).ifPresent(parentCategory ->
-                        newCategoryAttributes.addAll(getCategoryAttributes(parentCategory))));
-        Set<String> newAttributesNames = newCategoryAttributes.stream()
-                .map(CategoryAttribute::getName)
-                .collect(Collectors.toSet());
+        Optional<Category> parentCategory = Optional.ofNullable(category.getParentCategoryId()).flatMap(this::findById);
+        List<CategoryAttribute> parentCategoryAttributes = Lists.newArrayList();
+        parentCategory.ifPresent(parent -> parentCategoryAttributes.addAll(getCategoryAttributes(parent)));
+        newCategoryAttributes.addAll(parentCategoryAttributes);
         List<Asset> assets = getAssetsInCategory(category.getId(), true);
+        List<CategoryAttribute> oldCategoryAttributes = oldCategory.get().getAdditionalAttributes();
         if (!assets.isEmpty()) {
             assets.forEach(asset -> {
                 attributeChanges.forEach((oldName, newName) -> {
@@ -150,14 +164,22 @@ public class CategoriesService {
                             .filter(attribute -> attribute.getName().equals(newName))
                             .findFirst();
                     oldAttribute.ifPresent(oldAttr -> {
+                        int index = findAttributeIndex(oldCategoryAttributes, oldAttr.getAttribute().getName()) + parentCategoryAttributes.size();
                         asset.removeAttribute(oldAttr);
-                        newAttribute.ifPresent(newAttr -> asset.addAttribute(new AssetAttribute(newAttr, oldAttr.getValue())));
+                        newAttribute.ifPresent(newAttr -> asset.addAttribute(index, new AssetAttribute(newAttr, oldAttr.getValue())));
                     });
                 });
                 List<AssetAttribute> assetAttributes = asset.getAttributes();
+                Set<String> newAttributesNames = newCategoryAttributes.stream()
+                        .map(CategoryAttribute::getName)
+                        .collect(Collectors.toSet());
+                Set<String> oldCategoryAttributesNames = oldCategory.get().getAdditionalAttributes().stream()
+                        .map(CategoryAttribute::getName)
+                        .collect(Collectors.toSet());
                 assetAttributes.forEach(attribute -> {
                     String name = attribute.getAttribute().getName();
-                    if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)) {
+                    if (!newAttributesNames.contains(name) && !attributeChanges.keySet().contains(name)
+                            && oldCategoryAttributesNames.contains(name)) {
                         asset.removeAttribute(attribute);
                     }
                 });
@@ -168,13 +190,23 @@ public class CategoriesService {
                 newCategoryAttributes.forEach(attribute -> {
                     String name = attribute.getName();
                     if (!assetAttributesNames.contains(name) && !attributeChanges.values().contains(name)) {
-                        asset.addAttribute(new AssetAttribute(attribute, ""));
+                        int index = findAttributeIndex(newCategoryAttributes, name) + parentCategoryAttributes.size();
+                        if (index < asset.getAttributes().size() - 1)
+                            index++;
+                        asset.addAttribute(index, new AssetAttribute(attribute, ""));
                     }
                 });
             });
             assetsService.saveAssets(assets);
         }
-        return saveCategory(categoryUpdate.getCategory());
+        return Optional.of(saveCategory(categoryUpdate.getCategory()));
+    }
+
+    private int findAttributeIndex(Collection<CategoryAttribute> attributes, String attributeName) {
+        return attributes.stream()
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toList())
+                .indexOf(attributeName);
     }
 
     public void deleteCategory(Category category) throws IOException {

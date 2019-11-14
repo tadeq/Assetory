@@ -1,6 +1,5 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -204,7 +203,7 @@ public class App implements CommandLineRunner {
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(450 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", (i * 2 + 1) + "-07-2020")
+                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1) )
                     .build());
 
             String[] officeToolsNames = {"Microsoft Ultimate 2007", "Microsoft Ultimate 2016", "Libre Office"};
@@ -215,7 +214,7 @@ public class App implements CommandLineRunner {
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(250 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", (i * 2 + 5) + "-08-2020")
+                    .addAttribute(AttributeType.date, "Expiration Date", "2020-08-" + (i * 2 + 5))
                     .build());
 
             String[] antivirusesNames = {"BitDefender 2020", "Norton", "Panda", "TotalAV", "BullGuard"};
@@ -226,7 +225,7 @@ public class App implements CommandLineRunner {
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(370 - i * 10))
-                    .addAttribute(AttributeType.date, "Expiration Date", (i * 3 + 1) + "-09-2020")
+                    .addAttribute(AttributeType.date, "Expiration Date", "2020-09-" + (i * 3 + 1))
                     .build());
 
         }
