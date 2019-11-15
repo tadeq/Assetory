@@ -12,10 +12,12 @@ import java.util.Map;
 @Getter
 public class ComputerInformation {
     public static final String COMPUTER_ID_FIELD = "computerId";
+    public static final String DATE_FIELD = "date";
 
     private String id;
     private String computerId;
-    private String dateTime;
+    private String date;
+    private String time;
     private Map<String, String> system;
     private Map<String, String> hardware;
     private Map<String, List<SoftwareRecord>> software;

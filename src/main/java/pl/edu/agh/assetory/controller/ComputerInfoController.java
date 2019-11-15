@@ -8,6 +8,7 @@ import pl.edu.agh.assetory.model.client.ComputerInformation;
 import pl.edu.agh.assetory.service.ComputerInformationService;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "info")
@@ -41,5 +42,24 @@ public class ComputerInfoController {
             responseContainer = "List")
     public ResponseEntity<?> getReportsForComputer(@PathVariable String computerId) throws IOException {
         return ResponseEntity.ok(informationService.findByComputerId(computerId));
+    }
+
+    @GetMapping("/{computerId}/{date}")
+    @ApiOperation(value = "returns report for given computer and date",
+            response = ComputerInformation.class)
+    public ResponseEntity<?> getReportForComputer(@PathVariable String computerId, @PathVariable String date) throws IOException {
+        return informationService.findByComputerIdAndDate(computerId, date)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/registered/identifiers")
+    @ApiOperation(value = "returns all registered computers identifiers",
+            response = String.class,
+            responseContainer = "List")
+    public ResponseEntity<?> getComputersIdentifiers() throws IOException {
+        return ResponseEntity.ok(informationService.getAllComputerInformation().stream()
+                .map(ComputerInformation::getComputerId)
+                .collect(Collectors.toSet()));
     }
 }

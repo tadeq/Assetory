@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ComputerInformationService {
@@ -53,7 +54,7 @@ public class ComputerInformationService {
                     builder.field("type", "keyword");
                 }
                 builder.endObject();
-                builder.startObject("dateTime");
+                builder.startObject("date");
                 {
                     builder.field("type", "keyword");
                 }
@@ -92,6 +93,16 @@ public class ComputerInformationService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         return getSearchResult(searchResponse);
+    }
+
+    public Optional<ComputerInformation> findByComputerIdAndDate(String computerId, String date) throws IOException {
+        BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery(ComputerInformation.COMPUTER_ID_FIELD, computerId))
+                .must(QueryBuilders.termQuery(ComputerInformation.DATE_FIELD, date));
+        SearchRequest searchRequest = new SearchRequest("computer_info").source(new SearchSourceBuilder().query(queryBuilder).size(10000));
+        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        return getSearchResult(searchResponse).stream().findFirst();
     }
 
     private List<ComputerInformation> getSearchResult(SearchResponse response) {

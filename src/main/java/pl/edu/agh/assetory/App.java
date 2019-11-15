@@ -44,7 +44,6 @@ public class App implements CommandLineRunner {
             prepareTestStructure();
         } catch (IOException e) {
             e.printStackTrace();
-            System.out.println("Cos duplo z IOException z elastica");
         }
     }
 
@@ -207,7 +206,7 @@ public class App implements CommandLineRunner {
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(450 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1) )
+                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1))
                     .build());
 
             String[] officeToolsNames = {"Microsoft Ultimate 2007", "Microsoft Ultimate 2016", "Libre Office"};
