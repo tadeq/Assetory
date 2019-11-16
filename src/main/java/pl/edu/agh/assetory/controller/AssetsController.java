@@ -129,6 +129,14 @@ public class AssetsController {
             assetsFilter.setCategoryId(new ArrayList<>(matchingCategoryIds));
             return ResponseEntity.ok(assetsService.filterAssetsByFields(assetsFilter));
         }
+    }
 
+    @PutMapping(value = "/{id}/register/computer")
+    @ApiOperation(value = "Saves identifier of computer connected to server in asset",
+            response = Asset.class)
+    public ResponseEntity<?> registerComputer(@PathVariable String id, @RequestBody String computerIdentifier) throws IOException {
+        return assetsService.registerComputer(id, computerIdentifier)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
