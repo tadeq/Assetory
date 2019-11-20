@@ -287,4 +287,9 @@ public class AssetsService {
         }
         return Optional.empty();
     }
+
+    public void disconnectComputer(Asset asset) throws IOException {
+        asset.setConnectedComputerId(null);
+        saveAsset(asset);
+    }
 }

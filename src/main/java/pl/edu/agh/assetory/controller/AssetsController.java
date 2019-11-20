@@ -131,12 +131,23 @@ public class AssetsController {
         }
     }
 
-    @PutMapping(value = "/{id}/register/computer")
+    @PutMapping(value = "/{id}/computer-info/register")
     @ApiOperation(value = "Saves identifier of computer connected to server in asset",
             response = Asset.class)
     public ResponseEntity<?> registerComputer(@PathVariable String id, @RequestBody String computerIdentifier) throws IOException {
         return assetsService.registerComputer(id, computerIdentifier)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping(value = "/{id}/computer-info/register")
+    @ApiOperation(value = "Disconnects computer from asset")
+    public ResponseEntity<?> disconnectComputer(@PathVariable String id) throws IOException {
+        Optional<Asset> assetToDisconnect = assetsService.getById(id);
+        if (assetToDisconnect.isPresent()) {
+            assetsService.disconnectComputer(assetToDisconnect.get());
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
