@@ -32,6 +32,9 @@ public class Asset extends DBEntity {
     @Getter(AccessLevel.NONE)
     private Set<String> relatedAssetsIds = Sets.newHashSet();
 
+    @Setter
+    private String connectedComputerId;
+
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
         super(id);
         this.name = name;

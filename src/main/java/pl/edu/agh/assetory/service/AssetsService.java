@@ -276,4 +276,20 @@ public class AssetsService {
         }
         return queryBuilder;
     }
+
+    public Optional<Asset> registerComputer(String assetId, String computerIdentifier) throws IOException {
+        Optional<Asset> assetOpt = getById(assetId);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.setConnectedComputerId(computerIdentifier);
+            saveAsset(asset);
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    public void disconnectComputer(Asset asset) throws IOException {
+        asset.setConnectedComputerId(null);
+        saveAsset(asset);
+    }
 }
