@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @EqualsAndHashCode(callSuper = true)
@@ -22,6 +23,7 @@ import java.util.Set;
 public class Asset extends DBEntity {
     public static final String CATEGORY_ID_FIELD_KEY = "categoryId";
     public static final String NAME_FIELD_KEY = "name";
+    public static final String REALATED_ASSETS_IDS_KEY = "realtedAssetsIds";
     private String name;
     @Setter
     private String categoryId;
@@ -31,6 +33,9 @@ public class Asset extends DBEntity {
 
     @Getter(AccessLevel.NONE)
     private Set<String> relatedAssetsIds = Sets.newHashSet();
+
+    @Setter
+    private String connectedComputerId;
 
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
         super(id);
@@ -50,6 +55,13 @@ public class Asset extends DBEntity {
 
     public List<AssetAttribute> getAttributes() {
         return ImmutableList.copyOf(attributes);
+    }
+
+    public List<String> getAttributesNames() {
+        return attributes.stream()
+                .map(AssetAttribute::getAttribute)
+                .map(CategoryAttribute::getName)
+                .collect(Collectors.toList());
     }
 
     public Optional<AssetAttribute> getAttribute(String attributeName) {
@@ -80,8 +92,12 @@ public class Asset extends DBEntity {
                 .findFirst().ifPresent(attribute -> this.attributes.remove(attribute));
     }
 
-    public void addRelatedAssetId(String assetId) {
-        this.relatedAssetsIds.add(assetId);
+    public void addRelatedAssetIds(Set<String> assetIds) {
+        this.relatedAssetsIds.addAll(assetIds);
+    }
+
+    public void removeRelatedAssetIds(List<String> assetIds) {
+        this.relatedAssetsIds.removeAll(assetIds);
     }
 
     public static class Builder {
