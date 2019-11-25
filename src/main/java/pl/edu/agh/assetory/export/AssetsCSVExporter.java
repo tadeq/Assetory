@@ -23,10 +23,8 @@ public class AssetsCSVExporter {
         File csvFile = new File(filename);
         List<String> attributesHeaders = getAttributesHeaders(assets);
         List<String> headers = Lists.newLinkedList();
-        headers.add(Asset.ID_FIELD_KEY);
         headers.add(Asset.NAME_FIELD_KEY);
         headers.add(Asset.CATEGORY_ID_FIELD_KEY);
-        headers.add(Asset.REALATED_ASSETS_IDS_KEY);
         headers.addAll(attributesHeaders);
         try (PrintWriter printWriter = new PrintWriter(csvFile)) {
             printWriter.println(String.join(",", headers));
@@ -37,10 +35,8 @@ public class AssetsCSVExporter {
 
     private List<String> getAssetAttributes(Asset asset, List<String> attributesHeaders) {
         List<String> attributes = Lists.newLinkedList();
-        attributes.add(asset.getId());
         attributes.add(asset.getName());
         attributes.add(asset.getCategoryId());
-        attributes.add(String.join(";", asset.getRelatedAssetsIds()));
         attributesHeaders.forEach(header -> {
             String attributeValue = asset.getAttribute(header).map(AssetAttribute::getValue).orElse("");
             attributes.add(attributeValue);
