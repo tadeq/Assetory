@@ -26,15 +26,20 @@ public class AssetsFilterDeserializer extends JsonDeserializer<AssetsFilter> {
         Map<String, List<String>> filtersMap = mapper.readerFor(new TypeReference<Map<String, List<String>>>() {
         }).readValue(filters);
         filtersMap.remove(NAME_FIELD);
+        filtersMap.remove(ID_FIELD);
         filtersMap.remove(CATEGORY_ID_FIELD);
         builder.filters(filtersMap);
 
         ObjectReader reader = mapper.readerFor(new TypeReference<List<String>>() {
         });
         Optional<JsonNode> nameNode = Optional.ofNullable(filters.get(NAME_FIELD));
+        Optional<JsonNode> idNode = Optional.ofNullable(filters.get(ID_FIELD));
         Optional<JsonNode> categoryIdsNode = Optional.ofNullable(filters.get(CATEGORY_ID_FIELD));
         if (nameNode.isPresent()) {
             builder.name(reader.readValue(nameNode.get()));
+        }
+        if (idNode.isPresent()) {
+            builder.id(reader.readValue(idNode.get()));
         }
         if (categoryIdsNode.isPresent()) {
             builder.categoryId(reader.readValue(categoryIdsNode.get()));

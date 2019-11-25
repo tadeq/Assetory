@@ -170,6 +170,50 @@ public class AssetsService {
         return Optional.empty();
     }
 
+    public Optional<Asset> addRelatedAssets(String id, List<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> assetOpt = getById(id);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.addRelatedAssetIds(relatedAssetsIds);
+            relatedAssetsIds.forEach(relatedAssetId -> {
+                try {
+                    Optional<Asset> relatedAssetOpt = getById(relatedAssetId);
+                    if (relatedAssetOpt.isPresent()) {
+                        Asset relatedAsset = relatedAssetOpt.get();
+                        relatedAsset.addRelatedAssetIds(Collections.singletonList(id));
+                        saveAsset(relatedAsset);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Asset> deleteRelatedAssets(String id, List<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> assetOpt = getById(id);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.removeRelatedAssetIds(relatedAssetsIds);
+            relatedAssetsIds.forEach(relatedAssetId -> {
+                try {
+                    Optional<Asset> relatedAssetOpt = getById(relatedAssetId);
+                    if (relatedAssetOpt.isPresent()) {
+                        Asset relatedAsset = relatedAssetOpt.get();
+                        relatedAsset.removeRelatedAssetIds(Collections.singletonList(id));
+                        saveAsset(relatedAsset);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
     private int findAttributeIndex(Collection<CategoryAttribute> attributes, String attributeName) {
         return attributes.stream()
                 .map(CategoryAttribute::getName)
@@ -255,6 +299,8 @@ public class AssetsService {
 
         Optional.ofNullable(assetsFilter.getName())
                 .map(nameList -> queryBuilder.must(getQueryForField(AssetsFilter.NAME_FIELD, nameList)));
+        Optional.ofNullable(assetsFilter.getId())
+                .map(idList -> queryBuilder.must(getQueryForField(AssetsFilter.ID_FIELD, idList)));
         Optional.ofNullable(assetsFilter.getCategoryId())
                 .map(categoryIdList -> queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_ID_FIELD, categoryIdList)));
 

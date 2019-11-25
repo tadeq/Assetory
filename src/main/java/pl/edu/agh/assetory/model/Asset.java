@@ -83,8 +83,12 @@ public class Asset extends DBEntity {
                 .findFirst().ifPresent(attribute -> this.attributes.remove(attribute));
     }
 
-    public void addRelatedAssetId(String assetId) {
-        this.relatedAssetsIds.add(assetId);
+    public void addRelatedAssetIds(List<String> assetIds) {
+        this.relatedAssetsIds.addAll(assetIds);
+    }
+
+    public void removeRelatedAssetIds(List<String> assetIds) {
+        this.relatedAssetsIds.removeAll(assetIds);
     }
 
     public static class Builder {

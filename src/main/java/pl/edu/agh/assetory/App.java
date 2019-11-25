@@ -37,14 +37,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        try {
-            assetsService.putMappings();
-            categoriesService.putMappings();
-            computerInformationService.putMappings();
-            prepareTestStructure();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            assetsService.putMappings();
+//            categoriesService.putMappings();
+//            computerInformationService.putMappings();
+//            prepareTestStructure();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 

@@ -113,6 +113,28 @@ public class AssetsController {
         return ResponseEntity.notFound().build();
     }
 
+    @PutMapping(value = "/related-assets/{id}")
+    @ApiOperation(
+            value = "add new related assets to existing asset",
+            response = Asset.class)
+    public ResponseEntity<?> addRelatedAssets(@PathVariable String id, @RequestParam List<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> asset = assetsService.addRelatedAssets(id, relatedAssetsIds);
+        if (asset.isPresent())
+            return ResponseEntity.ok(assetsService.saveAsset(asset.get()));
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping(value = "/related-assets/{id}")
+    @ApiOperation(
+            value = "delete related assets from existing asset",
+            response = Asset.class)
+    public ResponseEntity<?> deleteRelatedAssets(@PathVariable String id, @RequestParam List<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> asset = assetsService.deleteRelatedAssets(id, relatedAssetsIds);
+        if (asset.isPresent())
+            return ResponseEntity.ok(assetsService.saveAsset(asset.get()));
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping(value = "/filter")
     @ApiOperation(value = "Filters all assets",
             notes = "Filter all assets based on fields given in body. These fields are: id, name, categoryId, attributesMap")
