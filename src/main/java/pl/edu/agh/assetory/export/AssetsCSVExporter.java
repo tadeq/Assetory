@@ -27,7 +27,7 @@ public class AssetsCSVExporter {
         List<String> headers = Lists.newLinkedList();
         headers.add("Name");
         headers.add("Category");
-        headers.add("RelatedAssets");
+        headers.add("Related Assets");
         headers.addAll(attributesHeaders);
         Map<String, String> assetNames = assets.stream().collect(Collectors.toMap(Asset::getId, Asset::getName));
         try (PrintWriter printWriter = new PrintWriter(csvFile)) {
@@ -46,9 +46,9 @@ public class AssetsCSVExporter {
         attributes.add(asset.getName());
         String categoryName = Optional.ofNullable(categoryNames.get(asset.getCategoryId())).orElse("");
         attributes.add(categoryName);
-        attributes.add(asset.getRelatedAssetsIds().stream()
+        attributes.add("\"".concat(asset.getRelatedAssetsIds().stream()
                 .map(assetId -> Optional.ofNullable(assetNames.get(assetId)).orElse(""))
-                .collect(Collectors.joining(";")));
+                .collect(Collectors.joining(","))).concat("\""));
         attributesHeaders.forEach(header -> {
             String attributeValue = asset.getAttribute(header).map(AssetAttribute::getValue).orElse("");
             attributes.add(attributeValue);
