@@ -253,10 +253,10 @@ public class App implements CommandLineRunner {
             assetsService.addAsset(antivirus);
 
             //related assets - operating systems & antiviruses to computers\laptops
-            assetsService.addAsset(Asset.builder()
+            assetsService.saveAsset(Asset.builder()
                     .from(laptop)
                     .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
-            assetsService.addAsset(Asset.builder()
+            assetsService.saveAsset(Asset.builder()
                     .from(desktop)
                     .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
         }
