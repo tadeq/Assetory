@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory;
 
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,9 +58,10 @@ public class App implements CommandLineRunner {
         String[] users = {"John", "Xavier", "Carlos", "Juan", "Joe", "Tony", "Albert", "Cleo", "Phil"};
         Category all = categoriesService.addCategory(Category.builder()
                 .name("All")
-                .addAttribute("User", AttributeType.text)
-                .addAttribute("Location", AttributeType.text)
-                .addAttribute("Price", AttributeType.number)
+                .addRequiredAttribute("Owner", AttributeType.text)
+                .addRequiredAttribute("User", AttributeType.text)
+                .addRequiredAttribute("Location", AttributeType.text)
+                .addRequiredAttribute("Price", AttributeType.number)
                 .build());
 
         Category hardware = categoriesService.addCategory(Category.builder()
@@ -73,7 +75,7 @@ public class App implements CommandLineRunner {
                 .name("Computers")
                 .addAttribute("Processor", AttributeType.text)
                 .addAttribute("RAM(Gb)", AttributeType.number)
-                .addAttribute("Hard disk(Gb)", AttributeType.number)
+                .addAttribute("Hard disc(Gb)", AttributeType.number)
                 .addAttribute("Graphics card", AttributeType.text)
                 .build());
 
@@ -109,7 +111,8 @@ public class App implements CommandLineRunner {
         Category software = categoriesService.addCategory(Category.builder()
                 .parentCategoryId(all.getId())
                 .name("Software")
-                .addAttribute("Expiration Date", AttributeType.date)
+                .addAttribute("License Expiration Date", AttributeType.date)
+                .addAttribute("Software version", AttributeType.text)
                 .build());
 
         Category operatingSystems = categoriesService.addCategory(Category.builder()
@@ -124,13 +127,14 @@ public class App implements CommandLineRunner {
                 .parentCategoryId(software.getId())
                 .name("Antiviruses")
                 .build());
-
+        String administrator = "Administrator";
         for (int i = 0; i < 5; i++) {
             String[] locations = {"Office", "Room", "Lab", "Meeting Room"};
             //hardware
             assetsService.addAsset(Asset.builder()
                     .categoryId(hardware.getId())
                     .name("iPhone 7" + " - xyz00" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(2500 - i * 100))
@@ -143,37 +147,42 @@ public class App implements CommandLineRunner {
             String[] graphics = {"GeForce GTX 1650", "Radeon Vega 11", "GeForce RTX 2070", "GeForce GTX 1050"};
             //laptops
             String[] displaySizes = {"15", "17"};
-            assetsService.addAsset(Asset.builder()
+            final Asset laptop = Asset.builder()
                     .categoryId(laptops.getId())
-                    .name("Lanovo IdeaPadx" + i * 100 + " - fcd00" + i)
+                    .name("Lenovo IdeaPadx" + i * 100 + " - fcd00" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(4500 - i * 250))
                     .addAttribute(AttributeType.text, "Manufacturer", "Lenovo")
                     .addAttribute(AttributeType.text, "Processor", getRandomString(processors))
                     .addAttribute(AttributeType.number, "RAM(Gb)", getRandomString(ram))
-                    .addAttribute(AttributeType.number, "Hard disk(Gb)", getRandomString(hdd))
+                    .addAttribute(AttributeType.number, "Hard disc(Gb)", getRandomString(hdd))
                     .addAttribute(AttributeType.text, "Graphics card", getRandomString(graphics))
                     .addAttribute(AttributeType.number, "Display size", getRandomString(displaySizes))
-                    .build());
+                    .build();
+            assetsService.addAsset(laptop);
             //desktops
-            assetsService.addAsset(Asset.builder()
+            final Asset desktop = Asset.builder()
                     .categoryId(desktops.getId())
                     .name("Infinity g3" + 10 * (i + 1) + " - asd0" + i * 11)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(6200 - i * 250))
                     .addAttribute(AttributeType.text, "Processor", getRandomString(processors))
                     .addAttribute(AttributeType.number, "RAM(Gb)", getRandomString(ram))
-                    .addAttribute(AttributeType.number, "Hard disk(Gb)", getRandomString(hdd))
+                    .addAttribute(AttributeType.number, "Hard disc(Gb)", getRandomString(hdd))
                     .addAttribute(AttributeType.text, "Graphics card", getRandomString(graphics))
                     .addAttribute(AttributeType.text, "Manufacturer", "IBM")
-                    .build());
+                    .build();
+            assetsService.addAsset(desktop);
 
             //network cards
             assetsService.addAsset(Asset.builder()
                     .categoryId(networkCards.getId())
                     .name("TP-Link TL-WN72" + i + "N" + " - wdi" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(620 - i * 25))
@@ -183,6 +192,7 @@ public class App implements CommandLineRunner {
             assetsService.addAsset(Asset.builder()
                     .categoryId(routers.getId())
                     .name("TP-Link Archer C20" + "-agd" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(120 - i * 5))
@@ -192,45 +202,63 @@ public class App implements CommandLineRunner {
             assetsService.addAsset(Asset.builder()
                     .categoryId(peripherals.getId())
                     .name("HP OfficeJet PRO 6970 AiO" + "-kks" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(240 - i * 5))
                     .addAttribute(AttributeType.text, "Manufacturer", "HP")
                     .build());
 
+            String[] softwareVersions = {"1.2.4", "10.12.2", "1.1.4", "4.0", "10.0.12", "3.7", "2.13", "11.22.14"};
             String[] operatingSystemsNames = {"Windows 10", "Windows 8/8.1", "Windows 7", "Windows Vista", "Other", "macOS", "Linux"};
             //operating systems
-            assetsService.addAsset(Asset.builder()
+            final Asset operatingSystem = Asset.builder()
                     .categoryId(operatingSystems.getId())
                     .name(getRandomString(operatingSystemsNames) + "-sys" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(450 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1))
-                    .build());
+                    .addAttribute(AttributeType.date, "License Expiration Date", "2020-07-" + (i * 2 + 1))
+                    .addAttribute(AttributeType.text, "Software version", getRandomString(softwareVersions))
+                    .build();
+            assetsService.addAsset(operatingSystem);
 
             String[] officeToolsNames = {"Microsoft Ultimate 2007", "Microsoft Ultimate 2016", "Libre Office"};
             //office tools
-            assetsService.addAsset(Asset.builder()
+            final Asset officeTool = Asset.builder()
                     .categoryId(officeTools.getId())
                     .name(getRandomString(officeToolsNames) + "-qwe" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(250 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", "2020-08-" + (i * 2 + 5))
-                    .build());
+                    .addAttribute(AttributeType.date, "License Expiration Date", "2020-08-" + (i * 2 + 5))
+                    .addAttribute(AttributeType.text, "Software version", getRandomString(softwareVersions))
+                    .build();
+            assetsService.addAsset(officeTool);
 
             String[] antivirusesNames = {"BitDefender 2020", "Norton", "Panda", "TotalAV", "BullGuard"};
             //antiviruses
-            assetsService.addAsset(Asset.builder()
+            final Asset antivirus = Asset.builder()
                     .categoryId(antiviruses.getId())
                     .name(getRandomString(antivirusesNames) + "-vir" + i)
+                    .addAttribute(AttributeType.text, "Owner", administrator)
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(370 - i * 10))
-                    .addAttribute(AttributeType.date, "Expiration Date", "2020-09-" + (i * 3 + 1))
-                    .build());
+                    .addAttribute(AttributeType.date, "License Expiration Date", "2020-09-" + (i * 3 + 1))
+                    .addAttribute(AttributeType.text, "Software version", getRandomString(softwareVersions))
+                    .build();
+            assetsService.addAsset(antivirus);
 
+            //related assets - operating systems & antiviruses to computers\laptops
+            assetsService.addAsset(Asset.builder()
+                    .from(laptop)
+                    .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
+            assetsService.addAsset(Asset.builder()
+                    .from(desktop)
+                    .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
         }
     }
 

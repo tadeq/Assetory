@@ -94,6 +94,11 @@ public class Category extends DBEntity {
             return this;
         }
 
+        public Builder addRequiredAttribute(String name, AttributeType type) {
+            this.category.additionalAttributes.add(new CategoryAttribute(type, name, true));
+            return this;
+        }
+
         public Builder addAttributes(Collection<CategoryAttribute> attributes) {
             this.category.additionalAttributes.addAll(attributes);
             return this;
