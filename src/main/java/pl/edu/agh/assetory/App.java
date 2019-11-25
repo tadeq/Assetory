@@ -12,6 +12,7 @@ import pl.edu.agh.assetory.model.Category;
 import pl.edu.agh.assetory.model.attributes.AttributeType;
 import pl.edu.agh.assetory.service.AssetsService;
 import pl.edu.agh.assetory.service.CategoriesService;
+import pl.edu.agh.assetory.service.ComputerInformationService;
 
 import java.io.IOException;
 import java.util.Random;
@@ -26,6 +27,8 @@ public class App implements CommandLineRunner {
     private AssetsService assetsService;
     @Autowired
     private CategoriesService categoriesService;
+    @Autowired
+    private ComputerInformationService computerInformationService;
 
     public static void main(String[] args) {
         log.info("Starting app");
@@ -34,14 +37,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        try {
-            assetsService.putMappings();
-            categoriesService.putMappings();
-            prepareTestStructure();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Cos duplo z IOException z elastica");
-        }
+//        try {
+//            assetsService.putMappings();
+//            categoriesService.putMappings();
+//            computerInformationService.putMappings();
+//            prepareTestStructure();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
 
@@ -203,7 +206,7 @@ public class App implements CommandLineRunner {
                     .addAttribute(AttributeType.text, "User", getRandomString(users))
                     .addAttribute(AttributeType.text, "Location", getRandomString(locations) + " " + i)
                     .addAttribute(AttributeType.number, "Price", String.valueOf(450 - i * 20))
-                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1) )
+                    .addAttribute(AttributeType.date, "Expiration Date", "2020-07-" + (i * 2 + 1))
                     .build());
 
             String[] officeToolsNames = {"Microsoft Ultimate 2007", "Microsoft Ultimate 2016", "Libre Office"};

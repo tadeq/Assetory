@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -86,6 +87,7 @@ public class AssetsService {
         String id = response.getId();
         UpdateRequest idUpdate = new UpdateRequest("asset", id).doc("id", id);
         asset.setId(id);
+        addRelatedAssets(asset.getId(), asset.getRelatedAssetsIds());
         client.update(idUpdate, RequestOptions.DEFAULT);
         return asset;
     }
@@ -165,6 +167,50 @@ public class AssetsService {
                 asset.removeAttribute(name);
                 asset.addAttribute(index, new AssetAttribute(attribute.getAttribute(), value));
             }));
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Asset> addRelatedAssets(String id, Set<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> assetOpt = getById(id);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.addRelatedAssetIds(relatedAssetsIds);
+            relatedAssetsIds.forEach(relatedAssetId -> {
+                try {
+                    Optional<Asset> relatedAssetOpt = getById(relatedAssetId);
+                    if (relatedAssetOpt.isPresent()) {
+                        Asset relatedAsset = relatedAssetOpt.get();
+                        relatedAsset.addRelatedAssetIds(Sets.newHashSet(id));
+                        saveAsset(relatedAsset);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Asset> deleteRelatedAssets(String id, List<String> relatedAssetsIds) throws IOException {
+        Optional<Asset> assetOpt = getById(id);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.removeRelatedAssetIds(relatedAssetsIds);
+            relatedAssetsIds.forEach(relatedAssetId -> {
+                try {
+                    Optional<Asset> relatedAssetOpt = getById(relatedAssetId);
+                    if (relatedAssetOpt.isPresent()) {
+                        Asset relatedAsset = relatedAssetOpt.get();
+                        relatedAsset.removeRelatedAssetIds(Collections.singletonList(id));
+                        saveAsset(relatedAsset);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
             return Optional.of(asset);
         }
         return Optional.empty();
@@ -255,6 +301,8 @@ public class AssetsService {
 
         Optional.ofNullable(assetsFilter.getName())
                 .map(nameList -> queryBuilder.must(getQueryForField(AssetsFilter.NAME_FIELD, nameList)));
+        Optional.ofNullable(assetsFilter.getId())
+                .map(idList -> queryBuilder.must(getQueryForField(AssetsFilter.ID_FIELD, idList)));
         Optional.ofNullable(assetsFilter.getCategoryId())
                 .map(categoryIdList -> queryBuilder.must(getQueryForField(AssetsFilter.CATEGORY_ID_FIELD, categoryIdList)));
 
@@ -275,5 +323,21 @@ public class AssetsService {
             queryBuilder.should(QueryBuilders.matchQuery(fieldName, value).operator(Operator.AND));
         }
         return queryBuilder;
+    }
+
+    public Optional<Asset> registerComputer(String assetId, String computerIdentifier) throws IOException {
+        Optional<Asset> assetOpt = getById(assetId);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            asset.setConnectedComputerId(computerIdentifier);
+            saveAsset(asset);
+            return Optional.of(asset);
+        }
+        return Optional.empty();
+    }
+
+    public void disconnectComputer(Asset asset) throws IOException {
+        asset.setConnectedComputerId(null);
+        saveAsset(asset);
     }
 }

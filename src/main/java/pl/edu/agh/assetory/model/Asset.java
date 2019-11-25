@@ -34,6 +34,9 @@ public class Asset extends DBEntity {
     @Getter(AccessLevel.NONE)
     private Set<String> relatedAssetsIds = Sets.newHashSet();
 
+    @Setter
+    private String connectedComputerId;
+
     public Asset(String id, String name, String categoryId, List<AssetAttribute> attributes) {
         super(id);
         this.name = name;
@@ -89,8 +92,12 @@ public class Asset extends DBEntity {
                 .findFirst().ifPresent(attribute -> this.attributes.remove(attribute));
     }
 
-    public void addRelatedAssetId(String assetId) {
-        this.relatedAssetsIds.add(assetId);
+    public void addRelatedAssetIds(Set<String> assetIds) {
+        this.relatedAssetsIds.addAll(assetIds);
+    }
+
+    public void removeRelatedAssetIds(List<String> assetIds) {
+        this.relatedAssetsIds.removeAll(assetIds);
     }
 
     public static class Builder {
