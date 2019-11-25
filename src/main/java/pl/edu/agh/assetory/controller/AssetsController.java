@@ -117,7 +117,7 @@ public class AssetsController {
     @ApiOperation(
             value = "add new related assets to existing asset",
             response = Asset.class)
-    public ResponseEntity<?> addRelatedAssets(@PathVariable String id, @RequestParam List<String> relatedAssetsIds) throws IOException {
+    public ResponseEntity<?> addRelatedAssets(@PathVariable String id, @RequestParam Set<String> relatedAssetsIds) throws IOException {
         Optional<Asset> asset = assetsService.addRelatedAssets(id, relatedAssetsIds);
         if (asset.isPresent())
             return ResponseEntity.ok(assetsService.saveAsset(asset.get()));

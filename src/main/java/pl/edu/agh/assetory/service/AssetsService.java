@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -86,6 +87,7 @@ public class AssetsService {
         String id = response.getId();
         UpdateRequest idUpdate = new UpdateRequest("asset", id).doc("id", id);
         asset.setId(id);
+        addRelatedAssets(asset.getId(), asset.getRelatedAssetsIds());
         client.update(idUpdate, RequestOptions.DEFAULT);
         return asset;
     }
@@ -170,7 +172,7 @@ public class AssetsService {
         return Optional.empty();
     }
 
-    public Optional<Asset> addRelatedAssets(String id, List<String> relatedAssetsIds) throws IOException {
+    public Optional<Asset> addRelatedAssets(String id, Set<String> relatedAssetsIds) throws IOException {
         Optional<Asset> assetOpt = getById(id);
         if (assetOpt.isPresent()) {
             Asset asset = assetOpt.get();
@@ -180,7 +182,7 @@ public class AssetsService {
                     Optional<Asset> relatedAssetOpt = getById(relatedAssetId);
                     if (relatedAssetOpt.isPresent()) {
                         Asset relatedAsset = relatedAssetOpt.get();
-                        relatedAsset.addRelatedAssetIds(Collections.singletonList(id));
+                        relatedAsset.addRelatedAssetIds(Sets.newHashSet(id));
                         saveAsset(relatedAsset);
                     }
                 } catch (IOException e) {
