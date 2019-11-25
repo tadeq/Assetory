@@ -34,14 +34,14 @@ public class App implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        try {
-            assetsService.putMappings();
-            categoriesService.putMappings();
-            prepareTestStructure();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Cos duplo z IOException z elastica");
-        }
+//        try {
+//            assetsService.putMappings();
+//            categoriesService.putMappings();
+//            prepareTestStructure();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            System.out.println("Cos duplo z IOException z elastica");
+//        }
     }
 
 
