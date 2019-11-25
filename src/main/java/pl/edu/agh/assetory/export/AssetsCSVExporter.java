@@ -27,19 +27,28 @@ public class AssetsCSVExporter {
         List<String> headers = Lists.newLinkedList();
         headers.add("Name");
         headers.add("Category");
+        headers.add("RelatedAssets");
         headers.addAll(attributesHeaders);
+        Map<String, String> assetNames = assets.stream().collect(Collectors.toMap(Asset::getId, Asset::getName));
         try (PrintWriter printWriter = new PrintWriter(csvFile)) {
             printWriter.println(String.join(",", headers));
-            assets.forEach(asset -> printWriter.println(String.join(",", getAssetAttributes(asset, attributesHeaders, categoryNames))));
+            assets.forEach(asset ->
+            {
+                final List<String> assetAttributes = getAssetAttributes(asset, attributesHeaders, categoryNames, assetNames);
+                printWriter.println(String.join(",", assetAttributes));
+            });
         }
         return csvFile;
     }
 
-    private List<String> getAssetAttributes(Asset asset, List<String> attributesHeaders, Map<String, String> categoryNames) {
+    private List<String> getAssetAttributes(Asset asset, List<String> attributesHeaders, Map<String, String> categoryNames, Map<String, String> assetNames) {
         List<String> attributes = Lists.newLinkedList();
         attributes.add(asset.getName());
         String categoryName = Optional.ofNullable(categoryNames.get(asset.getCategoryId())).orElse("");
         attributes.add(categoryName);
+        attributes.add(asset.getRelatedAssetsIds().stream()
+                .map(assetId -> Optional.ofNullable(assetNames.get(assetId)).orElse(""))
+                .collect(Collectors.joining(";")));
         attributesHeaders.forEach(header -> {
             String attributeValue = asset.getAttribute(header).map(AssetAttribute::getValue).orElse("");
             attributes.add(attributeValue);
