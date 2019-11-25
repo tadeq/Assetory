@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -19,24 +21,25 @@ public class AssetsCSVExporter {
     public AssetsCSVExporter() {
     }
 
-    public File exportAssets(String filename, List<Asset> assets) throws FileNotFoundException {
+    public File exportAssets(String filename, List<Asset> assets, Map<String, String> categoryNames) throws FileNotFoundException {
         File csvFile = new File(filename);
         List<String> attributesHeaders = getAttributesHeaders(assets);
         List<String> headers = Lists.newLinkedList();
-        headers.add(Asset.NAME_FIELD_KEY);
-        headers.add(Asset.CATEGORY_ID_FIELD_KEY);
+        headers.add("Name");
+        headers.add("Category");
         headers.addAll(attributesHeaders);
         try (PrintWriter printWriter = new PrintWriter(csvFile)) {
             printWriter.println(String.join(",", headers));
-            assets.forEach(asset -> printWriter.println(String.join(",", getAssetAttributes(asset, attributesHeaders))));
+            assets.forEach(asset -> printWriter.println(String.join(",", getAssetAttributes(asset, attributesHeaders, categoryNames))));
         }
         return csvFile;
     }
 
-    private List<String> getAssetAttributes(Asset asset, List<String> attributesHeaders) {
+    private List<String> getAssetAttributes(Asset asset, List<String> attributesHeaders, Map<String, String> categoryNames) {
         List<String> attributes = Lists.newLinkedList();
         attributes.add(asset.getName());
-        attributes.add(asset.getCategoryId());
+        String categoryName = Optional.ofNullable(categoryNames.get(asset.getCategoryId())).orElse("");
+        attributes.add(categoryName);
         attributesHeaders.forEach(header -> {
             String attributeValue = asset.getAttribute(header).map(AssetAttribute::getValue).orElse("");
             attributes.add(attributeValue);
