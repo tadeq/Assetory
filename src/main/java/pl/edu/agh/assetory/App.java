@@ -1,6 +1,6 @@
 package pl.edu.agh.assetory;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -253,9 +253,22 @@ public class App implements CommandLineRunner {
             assetsService.addAsset(antivirus);
 
             //related assets - operating systems & antiviruses to computers\laptops
-            //related assets - operating systems & antiviruses to computers\laptops
-            assetsService.addRelatedAssets(laptop.getId(), Sets.newHashSet(operatingSystem.getId(), officeTool.getId(), antivirus.getId()));
-            assetsService.addRelatedAssets(desktop.getId(), Sets.newHashSet(operatingSystem.getId(), officeTool.getId(), antivirus.getId()));
+            assetsService.saveAsset(Asset.builder()
+                    .from(laptop)
+                    .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
+            assetsService.saveAsset(Asset.builder()
+                    .from(desktop)
+                    .addRelatedAssets(Lists.newArrayList(operatingSystem.getId(), officeTool.getId(), antivirus.getId())).build());
+            assetsService.saveAsset(Asset.builder()
+                    .from(operatingSystem)
+                    .addRelatedAssets(Lists.newArrayList(laptop.getId(), desktop.getId())).build());
+            assetsService.saveAsset(Asset.builder()
+                    .from(officeTool)
+                    .addRelatedAssets(Lists.newArrayList(laptop.getId(), desktop.getId())).build());
+            assetsService.saveAsset(Asset.builder()
+                    .from(antivirus)
+                    .addRelatedAssets(Lists.newArrayList(laptop.getId(), desktop.getId())).build());
+
         }
     }
 
