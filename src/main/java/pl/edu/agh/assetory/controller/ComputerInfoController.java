@@ -1,5 +1,6 @@
 package pl.edu.agh.assetory.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import pl.edu.agh.assetory.model.client.ComputerInformation;
 import pl.edu.agh.assetory.service.ComputerInformationService;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,9 +25,11 @@ public class ComputerInfoController {
     @PostMapping
     @ApiOperation(value = "saves new report from connected machine",
             response = ComputerInformation.class)
-    public ResponseEntity<?> addComputerInformation(@RequestBody ComputerInformation info) throws IOException {
-        return info.getId() == null ? ResponseEntity.badRequest().body("Report id was not provided")
-                : ResponseEntity.ok(informationService.addComputerInformation(info));
+    public ResponseEntity<?> addComputerInformation(@RequestBody String info) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ComputerInformation information = mapper.readValue(info, ComputerInformation.class);
+        return information.getId() == null ? ResponseEntity.badRequest().body("Report id was not provided")
+                : ResponseEntity.ok(informationService.addComputerInformation(information));
     }
 
     @GetMapping
