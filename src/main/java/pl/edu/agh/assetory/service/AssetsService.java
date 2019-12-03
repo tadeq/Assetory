@@ -1,6 +1,7 @@
 package pl.edu.agh.assetory.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -225,6 +226,15 @@ public class AssetsService {
 
     public DocWriteResponse.Result deleteAsset(String assetId) throws IOException {
         DeleteRequest deleteRequest = new DeleteRequest("asset", assetId);
+        Optional<Asset> assetOpt = getById(assetId);
+        if (assetOpt.isPresent()) {
+            Asset asset = assetOpt.get();
+            List<Asset> relatedAssets = Lists.newArrayList(getByIds(asset.getRelatedAssetsIds()));
+            for (Asset relatedAsset : relatedAssets) {
+                relatedAsset.removeRelatedAssetIds(Collections.singletonList(assetId));
+                saveAsset(relatedAsset);
+            }
+        }
         return client.delete(deleteRequest, RequestOptions.DEFAULT).getResult();
     }
 
@@ -270,16 +280,18 @@ public class AssetsService {
     void deleteAssets(Collection<Asset> assets) throws IOException {
         if (!assets.isEmpty()) {
             BulkRequest bulkRequest = new BulkRequest();
-            assets.forEach(asset -> {
+            for (Asset asset : assets) {
+                List<Asset> relatedAssets = Lists.newArrayList(getByIds(asset.getRelatedAssetsIds()));
+                for (Asset relatedAsset : relatedAssets) {
+                    relatedAsset.removeRelatedAssetIds(Collections.singletonList(asset.getId()));
+                    saveAsset(relatedAsset);
+                }
                 DeleteRequest deleteRequest = new DeleteRequest("asset", asset.getId());
                 bulkRequest.add(deleteRequest);
-            });
+            }
             client.bulk(bulkRequest, RequestOptions.DEFAULT);
         }
     }
-
-
-//
 
 
     public Iterable<Asset> filterAssetsByFields(AssetsFilter assetsFilter) throws IOException {
